@@ -1,0 +1,19 @@
+bookdown::gitbook:
+  css: style.css
+  config:
+    toc:
+      before: |
+        <li><a href="./">R and Data Mining: Examples and Case Studies (2nd edition)</a></li>
+      after: |
+        <li><a href="http://www.rdatamining.com" target="blank">RDataMining.com</a></li>
+        <li><a href="http://group.rdatamining.com" target="blank">RDataMining LinkedIn Group</a></li>
+    edit: https://github.com/rdatamining/rdm-book/edit/master/%s
+    download: ["pdf", "epub"]
+bookdown::pdf_book:
+  includes:
+    in_header: preamble.tex
+  latex_engine: xelatex
+  citation_package: natbib
+  keep_tex: yes
+bookdown::epub_book: default
+

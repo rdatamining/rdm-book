@@ -21,7 +21,7 @@ description: "This book presents examples and case studies on using the R progra
 
 **Case studies:** The case studies are not included in this online version. They are reserved exclusively for a book version published by Elsevier in December 2012.
 
-**Latest version:** The latest online version is available at links below. See the websites also for an \textit{R Reference Card for Data Mining}.
+**Latest version:** The latest online version is available at links below. See the websites also for an *R Reference Card for Data Mining*.
 
 - http://www.rdatamining.com
 - http://www2.rdatamining.com (for readers having no access to above website)
@@ -37,14 +37,51 @@ description: "This book presents examples and case studies on using the R progra
 
 **Questions and feedback:** If you have any questions or comments, or come across any problems with this document or its book version, please feel free to post them to *the RDataMining LinkedIn Group* below or email them to me. Thanks.
 
-**Discussion forum:** Please join our discussions on R and data mining at *the RDataMining LinkedIn Group* (25,000+ members, as of `r format(Sys.Date(), format="%d %B %Y")`) on LinkedIn \<http://group.rdatamining.com>.
+**Discussion forum:** Please join our discussions on R and data mining at *the RDataMining LinkedIn Group*  on LinkedIn \<http://group.rdatamining.com> (25,000+ members, as of `r format(Sys.Date(), format="%d %B %Y")`).
 
 **Twitter:** Follow \@RDataMining on Twitter (3,200+ followers, as of `r format(Sys.Date(), format="%d %B %Y")`).
 
-**A sister book:** See a new edited book titled *Data Mining Application with R*at links below, which features 15 real-world applications on data mining with R. More details of the book can be found at links below.
+**A sister book:** See a new edited book titled *Data Mining Application with R* at links below, which features 15 real-world applications on data mining with R. More details of the book can be found at links below.
 
 - http://www.rdatamining.com/books/dmar
 - http://www2.rdatamining.com/data-mining-applications-with-r.html
+
+Copyright 2012-2018 Yanchang Zhao. The 1st edition was published by Elsevier in December 2012. All rights reserved. 
+
+
+# List of Abbreviations {-}
+
+ARIMA: Autoregressive integrated moving average
+
+ARMA: Autoregressive moving average
+
+AVF: Attribute value frequency
+
+CLARA: Clustering for large applications
+
+CRISP-DM: Cross industry standard process for data mining
+
+DBSCAN: Density-based spatial clustering of applications with noise
+
+DTW: Dynamic time warping
+
+DWT: Discrete wavelet transform
+
+GLM: Generalized linear model
+
+IQR: Interquartile range, i.e., the range between the first and third quartiles
+
+LOF: Local outlier factor
+
+NLP: Natural language processing
+
+PAM: Partitioning around medoids
+
+PCA: Principal component analysis
+
+STL: Seasonal-trend decomposition based on Loess
+
+TF-IDF: Term frequency-inverse document frequency
 
 
 
