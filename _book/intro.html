@@ -1,0 +1,326 @@
+<!DOCTYPE html>
+<html >
+
+<head>
+
+  <meta charset="UTF-8">
+  <meta http-equiv="X-UA-Compatible" content="IE=edge">
+  <title>R and Data Mining: Examples and Case Studies</title>
+  <meta name="description" content="This book presents examples and case studies on using the R programming language for data science and analytics. It is the 2nd edition, with its 1st one published in December 2012.">
+  <meta name="generator" content="bookdown 0.5.10 and GitBook 2.6.7">
+
+  <meta property="og:title" content="R and Data Mining: Examples and Case Studies" />
+  <meta property="og:type" content="book" />
+  
+  
+  <meta property="og:description" content="This book presents examples and case studies on using the R programming language for data science and analytics. It is the 2nd edition, with its 1st one published in December 2012." />
+  <meta name="github-repo" content="rdatamining/rdm-book" />
+
+  <meta name="twitter:card" content="summary" />
+  <meta name="twitter:title" content="R and Data Mining: Examples and Case Studies" />
+  
+  <meta name="twitter:description" content="This book presents examples and case studies on using the R programming language for data science and analytics. It is the 2nd edition, with its 1st one published in December 2012." />
+  
+
+
+
+<meta name="date" content="2017-12-20">
+
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="apple-mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-status-bar-style" content="black">
+  
+  
+<link rel="prev" href="index.html">
+<link rel="next" href="literature.html">
+<script src="libs/jquery-2.2.3/jquery.min.js"></script>
+<link href="libs/gitbook-2.6.7/css/style.css" rel="stylesheet" />
+<link href="libs/gitbook-2.6.7/css/plugin-bookdown.css" rel="stylesheet" />
+<link href="libs/gitbook-2.6.7/css/plugin-highlight.css" rel="stylesheet" />
+<link href="libs/gitbook-2.6.7/css/plugin-search.css" rel="stylesheet" />
+<link href="libs/gitbook-2.6.7/css/plugin-fontsettings.css" rel="stylesheet" />
+
+
+
+
+
+
+
+
+
+<style type="text/css">
+div.sourceCode { overflow-x: auto; }
+table.sourceCode, tr.sourceCode, td.lineNumbers, td.sourceCode {
+  margin: 0; padding: 0; vertical-align: baseline; border: none; }
+table.sourceCode { width: 100%; line-height: 100%; }
+td.lineNumbers { text-align: right; padding-right: 4px; padding-left: 4px; color: #aaaaaa; border-right: 1px solid #aaaaaa; }
+td.sourceCode { padding-left: 5px; }
+code > span.kw { color: #007020; font-weight: bold; } /* Keyword */
+code > span.dt { color: #902000; } /* DataType */
+code > span.dv { color: #40a070; } /* DecVal */
+code > span.bn { color: #40a070; } /* BaseN */
+code > span.fl { color: #40a070; } /* Float */
+code > span.ch { color: #4070a0; } /* Char */
+code > span.st { color: #4070a0; } /* String */
+code > span.co { color: #60a0b0; font-style: italic; } /* Comment */
+code > span.ot { color: #007020; } /* Other */
+code > span.al { color: #ff0000; font-weight: bold; } /* Alert */
+code > span.fu { color: #06287e; } /* Function */
+code > span.er { color: #ff0000; font-weight: bold; } /* Error */
+code > span.wa { color: #60a0b0; font-weight: bold; font-style: italic; } /* Warning */
+code > span.cn { color: #880000; } /* Constant */
+code > span.sc { color: #4070a0; } /* SpecialChar */
+code > span.vs { color: #4070a0; } /* VerbatimString */
+code > span.ss { color: #bb6688; } /* SpecialString */
+code > span.im { } /* Import */
+code > span.va { color: #19177c; } /* Variable */
+code > span.cf { color: #007020; font-weight: bold; } /* ControlFlow */
+code > span.op { color: #666666; } /* Operator */
+code > span.bu { } /* BuiltIn */
+code > span.ex { } /* Extension */
+code > span.pp { color: #bc7a00; } /* Preprocessor */
+code > span.at { color: #7d9029; } /* Attribute */
+code > span.do { color: #ba2121; font-style: italic; } /* Documentation */
+code > span.an { color: #60a0b0; font-weight: bold; font-style: italic; } /* Annotation */
+code > span.cv { color: #60a0b0; font-weight: bold; font-style: italic; } /* CommentVar */
+code > span.in { color: #60a0b0; font-weight: bold; font-style: italic; } /* Information */
+</style>
+
+<link rel="stylesheet" href="style.css" type="text/css" />
+</head>
+
+<body>
+
+
+
+  <div class="book without-animation with-summary font-size-2 font-family-1" data-basepath=".">
+
+    <div class="book-summary">
+      <nav role="navigation">
+
+<ul class="summary">
+<li><a href="./">A Minimal Book Example</a></li>
+
+<li class="divider"></li>
+<li class="chapter" data-level="" data-path="index.html"><a href="index.html"><i class="fa fa-check"></i>Messages from the Author</a></li>
+<li class="chapter" data-level="1" data-path="intro.html"><a href="intro.html"><i class="fa fa-check"></i><b>1</b> Introduction</a><ul>
+<li class="chapter" data-level="1.1" data-path="intro.html"><a href="intro.html#data-mining"><i class="fa fa-check"></i><b>1.1</b> Data Mining</a></li>
+<li class="chapter" data-level="1.2" data-path="intro.html"><a href="intro.html#r"><i class="fa fa-check"></i><b>1.2</b> R</a><ul>
+<li class="chapter" data-level="1.2.1" data-path="intro.html"><a href="intro.html#r-basics"><i class="fa fa-check"></i><b>1.2.1</b> R Basics</a></li>
+<li class="chapter" data-level="1.2.2" data-path="intro.html"><a href="intro.html#rstudio"><i class="fa fa-check"></i><b>1.2.2</b> RStudio</a></li>
+</ul></li>
+<li class="chapter" data-level="1.3" data-path="intro.html"><a href="intro.html#datasets"><i class="fa fa-check"></i><b>1.3</b> Datasets</a><ul>
+<li class="chapter" data-level="1.3.1" data-path="intro.html"><a href="intro.html#the-iris-dataset"><i class="fa fa-check"></i><b>1.3.1</b> The Iris Dataset </a></li>
+<li class="chapter" data-level="1.3.2" data-path="intro.html"><a href="intro.html#the-bodyfat-dataset"><i class="fa fa-check"></i><b>1.3.2</b> The Bodyfat Dataset </a></li>
+</ul></li>
+</ul></li>
+<li class="chapter" data-level="2" data-path="literature.html"><a href="literature.html"><i class="fa fa-check"></i><b>2</b> Literature</a></li>
+<li class="chapter" data-level="3" data-path="methods.html"><a href="methods.html"><i class="fa fa-check"></i><b>3</b> Methods</a></li>
+<li class="chapter" data-level="4" data-path="applications.html"><a href="applications.html"><i class="fa fa-check"></i><b>4</b> Applications</a><ul>
+<li class="chapter" data-level="4.1" data-path="applications.html"><a href="applications.html#example-one"><i class="fa fa-check"></i><b>4.1</b> Example one</a></li>
+<li class="chapter" data-level="4.2" data-path="applications.html"><a href="applications.html#example-two"><i class="fa fa-check"></i><b>4.2</b> Example two</a></li>
+</ul></li>
+<li class="chapter" data-level="5" data-path="final-words.html"><a href="final-words.html"><i class="fa fa-check"></i><b>5</b> Final Words</a></li>
+<li class="chapter" data-level="6" data-path="placeholder.html"><a href="placeholder.html"><i class="fa fa-check"></i><b>6</b> Placeholder</a></li>
+<li class="divider"></li>
+<li><a href="https://github.com/rstudio/bookdown" target="blank">Published with bookdown</a></li>
+
+</ul>
+
+      </nav>
+    </div>
+
+    <div class="book-body">
+      <div class="body-inner">
+        <div class="book-header" role="navigation">
+          <h1>
+            <i class="fa fa-circle-o-notch fa-spin"></i><a href="./">R and Data Mining: Examples and Case Studies</a>
+          </h1>
+        </div>
+
+        <div class="page-wrapper" tabindex="-1" role="main">
+          <div class="page-inner">
+
+            <section class="normal" id="section-">
+<div id="intro" class="section level1">
+<h1><span class="header-section-number">Chapter 1</span> Introduction</h1>
+<p>This book introduces into using R for data mining. It presents many examples of various data mining functionalities in R and three case studies of real world applications. The supposed audience of this book are postgraduate students, researchers, data miners and data scientists who are interested in using R to do their data mining research and projects. We assume that readers already have a basic idea of data mining and also have some basic experience with R. We hope that this book will encourage more and more people to use R to do data mining work in their research and applications.</p>
+<p>This chapter introduces basic concepts and techniques for data mining, including a data mining process and popular data mining techniques. It also presents R and its packages, functions and task views for data mining. At last, some datasets used in this book are described.</p>
+<div id="data-mining" class="section level2">
+<h2><span class="header-section-number">1.1</span> Data Mining</h2>
+<p>Data mining  is the process to discover interesting knowledge from large amounts of data <span class="citation">(Han and Kamber <a href="#ref-Han00Data">2000</a>)</span>. It is an interdisciplinary field with contributions from many areas, such as statistics, machine learning, information retrieval, pattern recognition and bioinformatics. Data mining is widely used in many domains, such as retail, finance, telecommunication and social media.</p>
+<p>The main techniques for data mining include classification and prediction, clustering, outlier detection, association rules, sequence analysis, time series analysis and text mining, and also some new techniques such as social network analysis and sentiment analysis. Detailed introduction of data mining techniques can be found in text books on data mining <span class="citation">(Han and Kamber <a href="#ref-Han00Data">2000</a>,<span class="citation">Hand, Mannila, and Smyth (<a href="#ref-Hand01Principles">2001</a>)</span>,<span class="citation">Witten and Frank (<a href="#ref-Witten05Data">2005</a>)</span>)</span>. In real world applications, a data mining process can be broken into six major phases: business understanding, data understanding, data preparation, modeling, evaluation and deployment, as defined by the CRISP-DM (Cross Industry Standard Process for Data Mining) &lt;<a href="http://www.crisp-dm.org/" class="uri">http://www.crisp-dm.org/</a>&gt;. This book focuses on the modeling phase, with data exploration and model evaluation involved in some chapters. Readers who want more information on data mining are referred to online resources in .</p>
+</div>
+<div id="r" class="section level2">
+<h2><span class="header-section-number">1.2</span> R</h2>
+<p>R  &lt;<a href="http://www.r-project.org/" class="uri">http://www.r-project.org/</a>&gt; <span class="citation">(R Core Team <a href="#ref-RCoreTeam15R">2015</a><a href="#ref-RCoreTeam15R">b</a>)</span> is a free software environment for statistical computing and graphics. It provides a wide variety of statistical and graphical techniques. R can be easily extended with 11967 packages available on CRAN &lt;<a href="http://cran.r-project.org/" class="uri">http://cran.r-project.org/</a>&gt; (as of 20 December 2017). In addition, there are many packages provided on other websites, such as Bioconductor &lt;<a href="http://www.bioconductor.org/" class="uri">http://www.bioconductor.org/</a>&gt;, and also a lot of packages under development at R-Forge &lt;<a href="http://r-forge.r-project.org/" class="uri">http://r-forge.r-project.org/</a>&gt; and GitHub &lt;<a href="https://github.com/" class="uri">https://github.com/</a>&gt;. More details about R are available in  &lt;<a href="http://cran.r-project.org/doc/manuals/R-intro.pdf" class="uri">http://cran.r-project.org/doc/manuals/R-intro.pdf</a>&gt; <span class="citation">(Venables, Smith, and the R Core Team <a href="#ref-R15Introduction">2015</a>)</span> and  &lt;<a href="http://cran.r-project.org/doc/manuals/R-lang.pdf" class="uri">http://cran.r-project.org/doc/manuals/R-lang.pdf</a>&gt; <span class="citation">(R Core Team <a href="#ref-RCoreTeam15RLanguage">2015</a><a href="#ref-RCoreTeam15RLanguage">a</a>)</span> at the CRAN website. R is widely used in both academia and industry.</p>
+<p>To help users to find our which R packages to use, the CRAN Task Views &lt;<a href="http://cran.r-project.org/web/views/" class="uri">http://cran.r-project.org/web/views/</a>&gt; are a good guidance. They provide collections of packages for different tasks. Some Task Views related to data mining are:</p>
+<ul>
+<li>Machine Learning &amp; Statistical Learning,</li>
+<li>Cluster Analysis &amp; Finite Mixture Models,</li>
+<li>Time Series Analysis,</li>
+<li>Natural Language Processing,</li>
+<li>Multivariate Statistics, and</li>
+<li>Analysis of Spatial Data.</li>
+</ul>
+<p>Another guide to R for data mining is an <em>R Reference Card for Data Mining</em> (see ), which provides a comprehensive indexing of R packages and functions for data mining, categorized by their functionalities. Its latest version is available at <a href="http://www.rdatamining.com/docs" class="uri">http://www.rdatamining.com/docs</a> and <a href="http://www2.rdatamining.com/" class="uri">http://www2.rdatamining.com/</a>.</p>
+<p>Readers who want more information on R are referred to online resources in .</p>
+<div id="r-basics" class="section level3">
+<h3><span class="header-section-number">1.2.1</span> R Basics</h3>
+<p>Please refer to <em>An Introduction to R</em> <span class="citation">(Venables, Smith, and the R Core Team <a href="#ref-R15Introduction">2015</a>)</span> for an introduction to basics of R.</p>
+</div>
+<div id="rstudio" class="section level3">
+<h3><span class="header-section-number">1.2.2</span> RStudio</h3>
+<p>RStudio &lt;<a href="http://www.rstudio.com/" class="uri">http://www.rstudio.com/</a>&gt; is an integrated development environment (IDE) for R and can run on various operating systems like Windows, Mac OS X and Linux. It is a very useful and powerful tool for R programming, and therefore, readers are suggested to use RStudio when learning from this book or doing their projects, although all the provided code can run without it. What you normally need is RStudio Desktop open source edition, which is free of charge.</p>
+<p>When RStudio is launched for the first time, you can see a window similar to Figure . There are four panels:</p>
+<ul>
+<li>Source panel (top left), which shows your R source code. If you cannot see the source panel, you can find it by clicking menu “File”, “New File” and then “R Script”. You can run a line or a selection of R code by clicking the “Run” bottom on top of source panel, or pressing “Ctrl + Enter”.</li>
+<li>Console panel (bottom left), which shows outputs and system messages displayed in a normal R console;</li>
+<li>Environment/History/Presentation panel (top right), whose three tabs show respectively all objects and function loaded in R, a history of submitted R code, and Presentations generated with R;</li>
+<li>Files/Plots/Packages/Help/Viewer panel (bottom right), whose tabs show respectively a list of files, plots, R packages installed, help documentation and local web content.</li>
+</ul>
+<div class="figure">
+<img src="figures/rstudio.png" alt="RStudio" />
+<p class="caption">RStudio</p>
+</div>
+<p>It is always a good practice to begin R programming with an RStudio project, which is a folder where to put your R code, data files and figures. To create a new project, click the “Project” button at the top-right corner and then choose “New Project”. After that, select “create project from new directory” and then “Empty Project”. After typing a directory name, which will also be your project name, click “Create Project” to create your project folder and files. If you open an existing project, RStudio will automatically set the working directory to the project directory, which is very convenient. After that, create three folders as below:</p>
+<ul>
+<li><em>code</em>, where to put your R souce code;</li>
+<li><em>data</em>, where to put your datasets; and</li>
+<li><em>figures</em>, where to put produced diagrams.</li>
+</ul>
+<p>In addition to above three folders which are usesul to most projects, depending on your project and preference, you may create additional folders below:</p>
+<ul>
+<li><em>rawdata</em>, where to put all raw data,</li>
+<li><em>models</em>, where to put all produced analytics models, and</li>
+<li><em>reports</em>, where to put your analysis reports.</li>
+</ul>
+</div>
+</div>
+<div id="datasets" class="section level2">
+<h2><span class="header-section-number">1.3</span> Datasets</h2>
+<p>Some datasets used in this book are briefly described in this section.</p>
+<div id="the-iris-dataset" class="section level3">
+<h3><span class="header-section-number">1.3.1</span> The Iris Dataset </h3>
+<p>The  dataset has been used for classification in many research publications. It consists of 50 samples from each of three classes of iris flowers . One class is linearly separable from the other two, while the latter are not linearly separable from each other. There are five attributes in the dataset:</p>
+<ul>
+<li>sepal length in cm,</li>
+<li>sepal width in cm,</li>
+<li>petal length in cm,</li>
+<li>petal width in cm, and</li>
+<li>class: Iris Setosa, Iris Versicolour, and Iris Virginica.</li>
+</ul>
+<p>Detailed desription of the dataset and research publications citing it can be found at the UCI Machine Learning Repository &lt;<a href="https://archive.ics.uci.edu/ml/datasets/Iris" class="uri">https://archive.ics.uci.edu/ml/datasets/Iris</a>&gt;.</p>
+<p>Below we have a look at the structure of the dataset with . Note that all variable names, package names and function names in R are case sensitive.</p>
+<div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r"><span class="kw">str</span>(iris)</code></pre></div>
+<pre><code>## &#39;data.frame&#39;:    150 obs. of  5 variables:
+##  $ Sepal.Length: num  5.1 4.9 4.7 4.6 5 5.4 4.6 5 4.4 4.9 ...
+##  $ Sepal.Width : num  3.5 3 3.2 3.1 3.6 3.9 3.4 3.4 2.9 3.1 ...
+##  $ Petal.Length: num  1.4 1.4 1.3 1.5 1.4 1.7 1.4 1.5 1.4 1.5 ...
+##  $ Petal.Width : num  0.2 0.2 0.2 0.2 0.2 0.4 0.3 0.2 0.2 0.1 ...
+##  $ Species     : Factor w/ 3 levels &quot;setosa&quot;,&quot;versicolor&quot;,..: 1 1 1 1 1 1 1 1 1 1 ...</code></pre>
+<p>From the output, we can see that there are 150 observations (records, or rows) and 5 variables (or columns) in the dataset. The first four variables are numeric. The last one, , is categoric (called as ``factor&quot; in R) and has three levels of values.</p>
+</div>
+<div id="the-bodyfat-dataset" class="section level3">
+<h3><span class="header-section-number">1.3.2</span> The Bodyfat Dataset </h3>
+<p> is a dataset available in package . It has 71 rows, and each row contains information of one person. It contains the following 10 numeric columns.</p>
+<ul>
+<li>: age in years.</li>
+<li>: body fat measured by DXA, response variable.</li>
+<li>: waist circumference.</li>
+<li>: hip circumference.</li>
+<li>: breadth of the elbow.</li>
+<li>: breadth of the knee.</li>
+<li>: sum of logarithm of three anthropometric measurements.</li>
+<li>: sum of logarithm of three anthropometric measurements.</li>
+<li>: sum of logarithm of three anthropometric measurements.</li>
+<li>: sum of logarithm of three anthropometric measurements.</li>
+</ul>
+<p>The value of  is to be predicted by the other variables.</p>
+<div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r"><span class="kw">data</span>(<span class="st">&quot;bodyfat&quot;</span>, <span class="dt">package =</span> <span class="st">&quot;TH.data&quot;</span>)
+<span class="kw">str</span>(bodyfat)</code></pre></div>
+<pre><code>## &#39;data.frame&#39;:    71 obs. of  10 variables:
+##  $ age         : num  57 65 59 58 60 61 56 60 58 62 ...
+##  $ DEXfat      : num  41.7 43.3 35.4 22.8 36.4 ...
+##  $ waistcirc   : num  100 99.5 96 72 89.5 83.5 81 89 80 79 ...
+##  $ hipcirc     : num  112 116.5 108.5 96.5 100.5 ...
+##  $ elbowbreadth: num  7.1 6.5 6.2 6.1 7.1 6.5 6.9 6.2 6.4 7 ...
+##  $ kneebreadth : num  9.4 8.9 8.9 9.2 10 8.8 8.9 8.5 8.8 8.8 ...
+##  $ anthro3a    : num  4.42 4.63 4.12 4.03 4.24 3.55 4.14 4.04 3.91 3.66 ...
+##  $ anthro3b    : num  4.95 5.01 4.74 4.48 4.68 4.06 4.52 4.7 4.32 4.21 ...
+##  $ anthro3c    : num  4.5 4.48 4.6 3.91 4.15 3.64 4.31 4.47 3.47 3.6 ...
+##  $ anthro4     : num  6.13 6.37 5.82 5.66 5.91 5.14 5.69 5.7 5.49 5.25 ...</code></pre>
+
+</div>
+</div>
+</div>
+<h3> Placeholder</h3>
+<div id="refs" class="references">
+<div id="ref-Han00Data">
+<p>Han, Jiawei, and Micheline Kamber. 2000. <em>Data Mining: Concepts and Techniques</em>. San Francisco, CA, USA: Morgan Kaufmann Publishers Inc.</p>
+</div>
+<div id="ref-Hand01Principles">
+<p>Hand, David J., Heikki Mannila, and Padhraic Smyth. 2001. <em>Principles of Data Mining (Adaptive Computation and Machine Learning)</em>. Hardcover; The MIT Press. <a href="http://www.amazon.co.uk/exec/obidos/ASIN/026208290X/citeulike-21" class="uri">http://www.amazon.co.uk/exec/obidos/ASIN/026208290X/citeulike-21</a>.</p>
+</div>
+<div id="ref-Witten05Data">
+<p>Witten, Ian, and Eibe Frank. 2005. <em>Data Mining: Practical Machine Learning Tools and Techniques</em>. Second. Morgan Kaufmann, San Francisco, CA., USA.</p>
+</div>
+<div id="ref-RCoreTeam15R">
+<p>R Core Team. 2015b. <em>R: A Language and Environment for Statistical Computing</em>. Vienna, Austria: R Foundation for Statistical Computing. <a href="http://www.R-project.org/" class="uri">http://www.R-project.org/</a>.</p>
+</div>
+<div id="ref-R15Introduction">
+<p>Venables, W. N., D. M. Smith, and the R Core Team. 2015. <em>An Introduction to R</em>. Vienna, Austria: R Foundation for Statistical Computing. <a href="http://www.R-project.org" class="uri">http://www.R-project.org</a>.</p>
+</div>
+<div id="ref-RCoreTeam15RLanguage">
+<p>R Core Team. 2015a. <em>R Language Definition</em>. Vienna, Austria: R Foundation for Statistical Computing. <a href="http://www.R-project.org" class="uri">http://www.R-project.org</a>.</p>
+</div>
+</div>
+            </section>
+
+          </div>
+        </div>
+      </div>
+<a href="index.html" class="navigation navigation-prev " aria-label="Previous page"><i class="fa fa-angle-left"></i></a>
+<a href="literature.html" class="navigation navigation-next " aria-label="Next page"><i class="fa fa-angle-right"></i></a>
+    </div>
+  </div>
+<script src="libs/gitbook-2.6.7/js/app.min.js"></script>
+<script src="libs/gitbook-2.6.7/js/lunr.js"></script>
+<script src="libs/gitbook-2.6.7/js/plugin-search.js"></script>
+<script src="libs/gitbook-2.6.7/js/plugin-sharing.js"></script>
+<script src="libs/gitbook-2.6.7/js/plugin-fontsettings.js"></script>
+<script src="libs/gitbook-2.6.7/js/plugin-bookdown.js"></script>
+<script src="libs/gitbook-2.6.7/js/jquery.highlight.js"></script>
+<script>
+gitbook.require(["gitbook"], function(gitbook) {
+gitbook.start({
+"sharing": {
+"github": false,
+"facebook": true,
+"twitter": true,
+"google": false,
+"weibo": false,
+"instapper": false,
+"vk": false,
+"all": ["facebook", "google", "twitter", "weibo", "instapaper"]
+},
+"fontsettings": {
+"theme": "white",
+"family": "sans",
+"size": 2
+},
+"edit": {
+"link": "https://github.com/rstudio/bookdown-demo/edit/master/01-intro.Rmd",
+"text": "Edit"
+},
+"download": ["bookdown-demo.pdf", "bookdown-demo.epub"],
+"toc": {
+"collapse": "subsection"
+}
+});
+});
+</script>
+
+</body>
+
+</html>
