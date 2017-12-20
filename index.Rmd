@@ -1,0 +1,55 @@
+--- 
+title: "R and Data Mining: Examples and Case Studies"
+author: |
+  | Yanchang Zhao
+  | yanchang@rdatamining.com
+  | http://www.RDataMining.com
+date: "`r format(Sys.Date(), format='%d %B %Y')`"
+site: bookdown::bookdown_site
+output: bookdown::gitbook
+documentclass: book
+bibliography: [MyBib.bib, packages.bib]
+biblio-style: apalike
+link-citations: yes
+github-repo: rdatamining/rdm-book
+description: "This book presents examples and case studies on using the R programming language for data science and analytics. It is the 2nd edition, with its 1st one published in December 2012."
+---
+
+
+# Messages from the Author {-}
+
+
+**Case studies:** The case studies are not included in this online version. They are reserved exclusively for a book version published by Elsevier in December 2012.
+
+**Latest version:** The latest online version is available at links below. See the websites also for an \textit{R Reference Card for Data Mining}.
+
+- http://www.rdatamining.com
+- http://www2.rdatamining.com (for readers having no access to above website)
+
+
+**R code, data and FAQs:** R scripts, data and FAQs are provided at links below.
+
+- http://www.rdatamining.com/books/rdm
+- http://www2.rdatamining.com/r-and-data-mining-examples-and-case-studies.html
+
+
+**Chapters/sections to add:** topic modelling and stream graph; spatial data analysis; performance evaluation of classification/prediction models (with ROC and AUC); natural language processing; parallel computing and big data. Please let me know if any other R-related topics are interesting to you but not covered yet by this book.
+
+**Questions and feedback:** If you have any questions or comments, or come across any problems with this document or its book version, please feel free to post them to *the RDataMining LinkedIn Group* below or email them to me. Thanks.
+
+**Discussion forum:** Please join our discussions on R and data mining at *the RDataMining LinkedIn Group* (25,000+ members, as of `r format(Sys.Date(), format="%d %B %Y")`) on LinkedIn \<http://group.rdatamining.com>.
+
+**Twitter:** Follow \@RDataMining on Twitter (3,200+ followers, as of `r format(Sys.Date(), format="%d %B %Y")`).
+
+**A sister book:** See a new edited book titled *Data Mining Application with R*at links below, which features 15 real-world applications on data mining with R. More details of the book can be found at links below.
+
+- http://www.rdatamining.com/books/dmar
+- http://www2.rdatamining.com/data-mining-applications-with-r.html
+
+
+
+```{r include=FALSE}
+# automatically create a bib database for R packages
+pkgs <- c(.packages(), 'bookdown', 'knitr', 'rmarkdown')
+knitr::write_bib(pkgs, 'packages.bib')
+```
