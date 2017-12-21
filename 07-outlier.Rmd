@@ -1,0 +1,230 @@
+# Outlier Detection {#outlier}
+
+
+This chapter presents examples of outlier detection with R. At first, it  demonstrates univariate outlier detection. After that, an example of outlier detection with LOF (Local Outlier Factor) is given, followed by examples on outlier detection by clustering. At last, it demonstrates outlier detection from time series data.
+
+
+
+## Univariate Outlier Detection
+
+This section shows an example of univariate outlier detection, and demonstrates how to apply it to multivariate data. In the example, univariate outlier detection is done with function `boxplot.stats()`, which returns the statistics for producing boxplots. In the result returned by the above function, one component is `out`, which gives a list of outliers. More specifically, it lists data points lying beyond the extremes of the whiskers. An argument of `coef` can be used to control how far the whiskers extend out from the box of a boxplot. More details on that can be obtained by running `?boxplot.stats` in R. Figure \@ref(fig:outlier-boxplot) shows a boxplot, where the four circles are  outliers.
+
+
+
+
+
+<<fig=TRUE>>=
+set.seed(3147)
+x <- rnorm(100)
+summary(x)
+# outliers
+boxplot.stats(x)$out
+boxplot(x)
+@
+\caption{Univariate Outlier Detection with Boxplot} 
+\label{fig:outlier:boxplot}\index{box plot}
+
+
+
+The above univariate outlier detection can be used to find outliers in multivariate data in a simple ensemble way. In the example below, we first generate a dataframe `df`, which has two columns, `x` and `y`. After that, outliers are detected separately from `x` and `y`. We then take outliers as those data which are outliers for both columns. In  Figure \@ref(fig:outlier-univariate-1), outliers are labeled with ``+" in red.
+<<>>=
+y <- rnorm(100)
+df <- data.frame(x, y)
+rm(x, y)
+head(df)
+attach(df)
+# find the index of outliers from x
+(a <- which(x %in% boxplot.stats(x)$out))
+# find the index of outliers from y
+(b <- which(y %in% boxplot.stats(y)$out))
+detach(df)
+@
+
+
+
+
+<<fig=TRUE>>=
+# outliers in both x and y
+(outlier.list1 <- intersect(a,b))
+plot(df)
+points(df[outlier.list1,], col="red", pch="+", cex=2.5)
+@
+\caption{Outlier Detection - I}
+\label{fig:outlier:univariate-1}
+
+
+
+Similarly, we can also take outliers as those data which are outliers in either `x` or `y`. In Figure \@ref(fig:outlier-univariate-2), outliers are labeled with ``x" in blue. 
+
+
+
+<<fig=TRUE>>=
+# outliers in either x or y
+(outlier.list2 <- union(a,b))
+plot(df)
+points(df[outlier.list2,], col="blue", pch="x", cex=2)
+@
+\caption{Outlier Detection - II}
+\label{fig:outlier:univariate-2}
+
+
+
+When there are three or more variables in an application, a final list of outliers might be produced with majority voting of outliers detected from individual variables. Domain knowledge should be involved when choosing the optimal way to ensemble in real-world applications.
+
+
+
+
+## Outlier Detection with LOF \index{LOF}\index{local outlier factor}
+
+LOF (Local Outlier Factor) is an algorithm for identifying density-based local outliers \cite{Breunig00LOF}. With LOF, the local density of a point is compared with that of its neighbors. If the former is significantly lower than the latter (with an LOF value greater than one), the point is in a sparser region than its neighbors, which suggests it be an outlier. A shortcoming of LOF is that it works on numeric data only.
+
+Function `lofactor()` calculates local outlier factors using the LOF algorithm, and it is available in packages *DMwR* [@R-DMwR] and *dprep* [@R-dprep]. An example of outlier detection with LOF is given below, where $k$ is the number of neighbors used for calculating local outlier factors. Figure \@ref(fig:outlier-density) shows a density plot of outlier scores.
+
+
+
+
+<<fig=T>>=
+library(DMwR)
+# remove "Species", which is a categorical column
+iris2 <- iris[,1:4]
+outlier.scores <- lofactor(iris2, k=5)
+plot(density(outlier.scores))
+@
+\caption{Density of outlier factors}
+\label{fig:outlier:density}
+
+
+<<>>=
+# pick top 5 as outliers
+outliers <- order(outlier.scores, decreasing=T)[1:5]
+# who are outliers
+print(outliers)
+print(iris2[outliers,])
+@
+
+
+Next, we show outliers with a biplot of the first two principal components\index{principal component} (see Figure \@ref(fig:outlier-pc)). 
+
+
+
+<<fig=T>>=
+n <- nrow(iris2)
+labels <- 1:n
+labels[-outliers] <- "."
+biplot(prcomp(iris2), cex=.8, xlabs=labels)
+@
+\caption{Outliers in a Biplot of First Two Principal Components}
+\label{fig:outlier:pc}
+
+
+In the above code, `prcomp()` performs a principal component analysis, and `biplot()` plots the data with its first two principal components. In Figure \@ref(fig:outlier-pc), the x- and y-axis are respectively the first and second principal components, the arrows show the original columns (variables), and the five outliers are labeled with their row numbers.
+
+
+We can also show outliers with a pairs plot as below, where outliers are labeled with ``+" in red.
+\setkeys{Gin}{width=1.0\textwidth}
+
+
+<<fig=T>>=
+pch <- rep(".", n)
+pch[outliers] <- "+"
+col <- rep("black", n)
+col[outliers] <- "red"
+pairs(iris2, pch=pch, col=col)
+@
+\caption{Outliers in a Matrix of Scatter Plots}
+\label{fig:outlier:pairs}
+
+
+
+Package *Rlof* [@R-Rlof] provides function `lof()`, a parallel implementation of the LOF algorithm. Its usage is similar to `lofactor()`, but `lof()` has two additional features of supporting multiple values of $k$ and several choices of distance metrics. Below is an example of `lof()`. After computing outlier scores, outliers can be detected by selecting the top ones. Note that the current version of package *Rlof* (v1.0.0) works under MacOS X and Linux, but does not work under Windows, because it depends on package *multicore` for parallel computing.
+<<eval=F>>=
+library(Rlof)
+outlier.scores <- lof(iris2, k=5)
+# try with different number of neighbors (k = 5,6,7,8,9 and 10)
+outlier.scores <- lof(iris2, k=c(5:10))
+@
+
+
+
+## Outlier Detection by Clustering \index{clustering} {#outlier:kmeans}
+
+Another way to detect outliers is clustering. By grouping data into clusters, those data not assigned to any clusters are taken as outliers. For example, with density-based clustering such as DBSCAN\index{DBSCAN}\cite{Ester96Density}, objects are grouped into one cluster if they are connected to one another by densely populated area. Therefore, objects not assigned to any clusters are isolated from other objects and are taken as outliers. An example of DBSCAN be found in Section \@ref(clustering:DBSCAN). 
+
+We can also detect outliers with the $k$-means\index{k-means clustering} algorithm. With $k$-means, the data are partitioned into $k$ groups by assigning them to the closest cluster centers. After that, we can calculate the distance (or dissimilarity) between each object and its cluster center, and pick those with largest distances as outliers. An example of outlier detection with $k$-means from the `iris` data (see Section \@ref(intro:iris) for details of the data) is given below.
+
+<<>>=
+# remove species from the data to cluster
+iris2 <- iris[,1:4]
+kmeans.result <- kmeans(iris2, centers=3)
+# cluster centers
+kmeans.result$centers
+# cluster IDs
+kmeans.result$cluster
+# calculate distances between objects and cluster centers
+centers <- kmeans.result$centers[kmeans.result$cluster, ]
+distances <- sqrt(rowSums((iris2 - centers)^2))
+# pick top 5 largest distances
+outliers <- order(distances, decreasing=T)[1:5]
+# who are outliers
+print(outliers)
+print(iris2[outliers,])
+@
+
+
+
+
+<<fig=TRUE>>=
+# plot clusters
+plot(iris2[,c("Sepal.Length", "Sepal.Width")], pch="o", 
+     col=kmeans.result$cluster, cex=0.3)
+# plot cluster centers
+points(kmeans.result$centers[,c("Sepal.Length", "Sepal.Width")], col=1:3, 
+       pch=8, cex=1.5)
+# plot outliers
+points(iris2[outliers, c("Sepal.Length", "Sepal.Width")], pch="+", col=4, cex=1.5)
+@
+\caption{Outliers with k-Means Clustering}
+
+
+In the above figure, cluster centers are labeled with asterisks and outliers with ``+".
+
+
+
+
+## Outlier Detection from Time Series \index{time series}
+
+This section presents an example of outlier detection from time series data. In the example, the time series data are first decomposed with robust regression using function `stl()` and then  outliers are identified. An introduction of STL (Seasonal-trend decomposition based on Loess)\index{STL}\cite{Cleveland90STL} is available at \url{http://cs.wellesley.edu/~cs315/Papers/stl\%20statistical\%20model.pdf}. More examples of time series decomposition can be found in Section \@ref(ts:decomp).
+
+
+
+
+<<fig=T>>= 
+# use robust fitting
+f <- stl(AirPassengers, "periodic", robust=TRUE)
+(outliers <- which(f$weights<1e-8))
+# set layout
+op <- par(mar=c(0, 4, 0, 3), oma=c(5, 0, 4, 0), mfcol=c(4, 1))
+plot(f, set.pars=NULL)
+sts <- f$time.series
+# plot outliers
+points(time(sts)[outliers], 0.8*sts[,"remainder"][outliers], pch="x", col="red")
+par(op) # reset layout
+@
+\caption{Outliers in Time Series Data}
+
+
+
+In above figure, outliers are labeled with ``x" in red.
+
+
+
+
+## Discussions
+
+The LOF algorithm is good at detecting local outliers, but it works on numeric data only. Package *Rlof* relies on the *multicore* package, which does not work under Windows. A fast and scalable outlier detection strategy for categorical data is the Attribute Value Frequency (AVF) algorithm \index{AVF} \cite{Koufakou07Scalable}.
+
+Some other R packages for outlier detection are:
+
+- Package *extremevalues* [@R-extremevalues]: univariate outlier detection;
+- Package *mvoutlier* [@R-mvoutlier]: multivariate outlier detection based on robust methods; and
+- Package *outliers* [@R-outliers]: tests for outliers.
