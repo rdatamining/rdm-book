@@ -1,0 +1,189 @@
+---
+output:
+  pdf_document: default
+  html_document: default
+---
+# Data Import and Export {#import}
+
+This chapter shows how to import foreign data into R and export R objects to other formats. At first, examples are given to demonstrate saving R objects to and loading them from *.Rdata* files. After that, it demonstrates importing data from and exporting data to .CSV files, SAS databases, ODBC databases and EXCEL files. 
+
+
+## Save and Load R Data
+
+Data in R can be saved as *.Rdata* files with function `save()` and *.Rdata* files can be reloaded into R with `load()`. With the code below, we first create a new object `a` as a numeric sequence (`1, 2, ..., 10`) and a second new object `b` as a vector of characters (`'a', 'b', 'c', 'd', 'e'`). Object `letters` is a built-in vector in R of 26 English letters, and `letters[1:5]` returns the first five letters. We then save them to a file and remove them from R with function `rm()`. After that, we reload both `a` and `b` from the file and print their values.
+
+```{r}
+a <- 1:10
+b <- letters[1:5]
+save(a, b, file="./data/mydatafile.Rdata")
+rm(a, b)
+load("./data/mydatafile.Rdata")
+print(a)
+print(b)
+```
+
+An alternative way to save and load R data objects is using functions `saveRDS()` and `readRDS()`. They work in a similar way as `save()` and `load()`. The differences are: 1) multiple R objects can be saved into one single file with `save()`, but only one object can be saved in a file with `saveRDS()`; and 2) `readRDS()` enables us to restore the data under a different object name, while `load()` restores the data under the same object name as when it was saved.
+
+```{r}
+a <- 1:10
+saveRDS(a, file="./data/mydatafile2.rds")
+a2 <- readRDS("./data/mydatafile2.rds")
+print(a2)
+```
+
+
+R also provides function `save.image()` to save everything in current workspace into a single file, which is very convenient to save your current work and resume it later, if the data loaded into R are not very big.
+
+
+## Import from and Export to .CSV Files
+
+Data frame is a data format that we mostly deal with in R. A data frame is similar to a table in databases, with each row being an observation (or record) and each column beding a variable (or feature).
+
+The example below demonstrates saving a dataframe into file and then reloaded it into R. At first, we create three vectors, an integer vector, a numeric vector and a character vector, use function `data.frame()` to build them into dataframe `df1` and save it into a .CSV file with `write.csv()`. Function `sample(5)` produces a random sample of five numbers out of 1 to 5. Column names in the data frame are then set with function `names()`. After that, we reload the data frame from the file to a new data frame `df2` with `read.csv()`. Note that the very first column printed below is the row names, created automatically by R. 
+
+```{r}
+var1 <- sample(5)
+var2 <- var1 / 10
+var3 <- c("R", "and", "Data Mining", "Examples", "Case Studies")
+df1 <- data.frame(var1, var2, var3)
+names(df1) <- c("Var.Int", "Var.Num", "Var.Char")
+write.csv(df1, "./data/mydatafile3.csv", row.names = FALSE)
+df2 <- read.csv("./data/mydatafile3.csv")
+print(df2)
+```
+
+
+
+## Import Data from SAS
+Package foreign [@R-foreign] provides function `read.ssd()` for importing SAS datasets (.sas7bdat files) into R. However, the following points are essential to make importing successful.
+
+- SAS must be available on your computer, and `read.ssd()` will call SAS to read SAS datasets and import them into R.
+- The file name of a SAS dataset has to be no longer than eight characters. Otherwise, the importing would fail. There is no such a limit when importing from a .CSV file.
+- During importing, variable names longer than eight characters are truncated to eight characters, which often makes it difficult to know the meanings of variables. One way to get around this issue is to import variable names separately from a .CSV file, which keeps full names of variables.
+
+An empty .CSV file with variable names can be generated with the following method.
+
+- Create an empty SAS table `dumVariables` from `dumData` as follows.
+```{sas, eval=F}
+      data work.dumVariables;
+         set work.dumData(obs=0);
+      run;
+```      
+- Export table `dumVariables` as a .CSV file. 
+
+
+
+The example below demonstrates importing data from a SAS dataset. Assume that there is a SAS data file `dumData.sas7bdat` and a .CSV file `dumVariables.csv` in folder `Current working directory/data`.
+
+
+```{r, eval=F}
+library(foreign) # for importing SAS data
+# the path of SAS on your computer
+sashome <- YOUR_SAS_HOME 
+filepath <- "./data"
+# filename should be no more than 8 characters, without extension
+filename <- "mySasDataFile" 
+# read data from a SAS dataset
+a <- read.ssd(file.path(filepath), filename, sascmd=file.path(sashome, "sas.exe"))
+print(a)
+```
+
+Note that the variable names above are truncated. The full names can be imported from a .CSV file with the following code. 
+
+```{r, eval=F}
+# read variable names from a .CSV file
+variableFileName <- "sasVariableNames.csv"
+myNames <- read.csv(file.path(filepath, variableFileName))
+names(a) <- names(myNames)
+print(a)
+```
+
+Although one can export a SAS dataset to a .CSV file and then import data from it, there are problems when there are special formats in the data, such as a value of `$100,000` for a numeric variable. In this case, it would be better to import from a .sas7bdat file. However, variable names may need to be imported into R separately as above.
+
+
+Another way to import data from a SAS dataset is to use function `read.xport()` to read a file in SAS Transport (XPORT) format.
+
+
+
+## Read from Databases via ODBC
+Package RODBC [@R-RODBC] provides connection to ODBC databases [@R-RODBC]. Below is an example of reading from an ODBC database. Function `odbcConnect()` sets up a connection to database, `sqlQuery()` sends an SQL query to the database, and `odbcClose()` closes the connection.
+```{r, eval=F}
+library(RODBC)
+connection <- odbcConnect(dsn="servername",uid="userid",pwd="******")
+query <- "SELECT * FROM lib.table WHERE ..."
+# or read query from file
+# query <- readChar("data/myQuery.sql", nchars=99999)
+myData <- sqlQuery(connection, query, errors=TRUE)
+odbcClose(connection)
+```
+There are also `sqlSave()` and `sqlUpdate()` for writing or updating a table in an ODBC database.
+
+There are other R packages for interaction with specific databases. For example, package *RPostgreSQL* [@R-RPostgreSQL] enables to read from and write to PostgreSQL databases, and below is a simple example.
+
+```{r, eval=F}
+drv <- dbDriver("PostgreSQL")
+con <- dbConnect(drv, host=db.host, port=db.port, dbname=db.name,
+                 user=user.name, password=user.pswd) 
+query <- "SELECT * FROM lib.table WHERE ..."
+data <- dbGetQuery(con, query)
+dbDisconnect(con)
+```
+
+
+## Read and Write EXCEL files
+
+Although .CSV is the mostly accepted and recommended file formats for transferring data, very often we have to read data from EXCEL files or save results into EXCEL files for presentaion or delivery to business users or management. Fortunately, there are multiple ways to read and write EXCEL files in R, and below we show how to do so with packages *openxlsx*, *xlsx* and *RODBC*. 
+
+For reading and writing EXCEL files on Mac OS X and Linux, *openxlsx* is recommended, because it is not straight-forward to set up packages *xlsx* and *RODBC* on those operation systems. However, all of above three packages are very easy to set up on Windows machines.
+
+### Read and Write EXCEL files with package *openxlsx*
+Package *openxlsx* [@R-openxlsx] supports reading and writing EXCEL files, and it does not depend on Java. It is very easy to use and below is an example.
+
+```{r, eval=F}
+library(openxlsx)
+data <- read.xlsx(file.name, sheet=2)
+write.xlsx(iris, file.name)
+```
+
+
+
+### Read and Write EXCEL files with package *xlsx*
+While package *RODBC* can read and write EXCEL files on Windows, but it does not work directly on Mac OS X, because an ODBC driver for EXCEL is not provided by default on Mac. However, package *xlsx* supports reading and writing Excel 2007 and Excel 97/2000/XP/2003 files [@R-xlsx], with no additional drivers required. It works both on Windows and on Mac OS X. However, Java needs to be configured properly to for the package to work.
+
+The example below demonstrates creation of an EXCEL file `iris.xlsx` with three sheets. Function `library()` loads an R package (or library), and `table()` returns the frequencies of values in a vector. We can see that there are three species, with each having 50 observations. Observations of species `setosa` are extracted first with function `subset()` and then saved into sheet `setosa` in the EXCEl file with function `write.xlsx()`. Row names are excluded using `row.names=F`. Then data of the other two species are saved into the same file, but in different sheets. When writing the second and third sheets, we need to use `append=T` to add new sheets to the existing file, instead of overwriting it. Finally, we read from sheet `setosa` with function `read.xlsx()` and show the first six observations with function `head()`.
+
+```{r, eval=F}
+library(xlsx)
+table(iris$Species)
+setosa <- subset(iris, Species == "setosa")
+write.xlsx(setosa, file="./data/iris.xlsx", sheetName="setosa", row.names=F)
+versicolor <- subset(iris, Species == "versicolor")
+write.xlsx(versicolor, file="./data/iris.xlsx", sheetName="versicolor", 
+           row.names=F, append=T)
+virginica <- subset(iris, Species == "virginica")
+write.xlsx(virginica, file="./data/iris.xlsx", sheetName="virginica", 
+           row.names=F, append=T)
+
+a <- read.xlsx("./data/iris.xlsx", sheetName="setosa")
+head(a)
+```
+
+
+### Read EXCEL Files with package *RODBC*
+An example of writing data to and reading data from EXCEL files with package RODBC [@R-RODBC] is shown below, where a sheet name needs to be provided in function `sqlFetch()`.
+```{r, eval=F}
+library(RODBC) 
+filename <- "data/myExcelFile.xls"
+xlsFile <- odbcConnectExcel(filename, readOnly = FALSE)
+sqlSave(xlsFile, a, rownames = FALSE)
+b <- sqlFetch(xlsFile, "sheetname")
+odbcClose(xlsFile) 
+```
+Note that there might be a limit of 65,536 rows to write to an EXCEL file.
+
+
+
+
+## Further Readings
+
+For more details on data import and export, please refer to [R Data Import/Export](http://cran.r-project.org/doc/manuals/R-data.pdf) [@RCoreTeam15RData], which covers importing data from text files, XML files, spreadsheet-like data, various statistical systems, relational databases, binary files, image files, connections and network interfaces.

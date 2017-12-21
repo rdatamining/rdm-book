@@ -16,6 +16,7 @@ description: "This book presents examples and case studies on using the R progra
 ---
 
 
+
 # Messages from the Author {-}
 
 
@@ -87,6 +88,21 @@ TF-IDF: Term frequency-inverse document frequency
 
 ```{r include=FALSE}
 # automatically create a bib database for R packages
-pkgs <- c(.packages(), 'bookdown', 'knitr', 'rmarkdown')
+pkgs <- c('bookdown', 'knitr', 'rmarkdown',
+          'dplyr', 'foreign', 'ggplot2', 'ggvis', 'googleVis', 'lattice',
+          'magrittr', 'MASS', 'openxlsx', 'rgl', 'RODBC','RPostgreSQL', 
+          'scatterplot3d', 
+          'TH.data', 'xlsx')
+
+## exclude packages already installed
+pkgs.installed <- installed.packages()
+pkgs.to.install <- setdiff(pkgs, pkgs.installed[, 1])
+if (length(pkgs.to.install) > 0) {
+  print("Packages to install:")
+  print(pkgs.to.install)
+  install.packages(pkgs.to.install)
+}
+
+pkgs <- c(.packages(), pkgs)
 knitr::write_bib(pkgs, 'packages.bib')
 ```

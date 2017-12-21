@@ -1,6 +1,15 @@
-```{r include=F}
-options(repos = c(CRAN = 'https://cran.rstudio.com'))
+---
+output:
+  pdf_document: default
+  html_document: default
+---
+
+
+```{r, results='hide', echo=F}
+# load libraries
+library(magrittr)
 ```
+
 
 # Introduction {#intro}
 
@@ -21,7 +30,7 @@ The main techniques for data mining include classification and prediction, clust
 
 ## R
 
-R \index{R} ^[http://www.r-project.org/] [@RCoreTeam15R] is a free software environment for statistical computing and graphics. It provides a wide variety of statistical and graphical techniques. R can be easily extended with `r nrow(available.packages())` packages available on [CRAN](http://cran.r-project.org/) (as of `r format(Sys.Date(), format="%d %B %Y")`). In addition, there are many packages provided on other websites, such as [Bioconductor](http://www.bioconductor.org/), and also a lot of packages under development at [R-Forge](http://r-forge.r-project.org/) and [GitHub](https://github.com/). More details about R are available in [*An Introduction to R*](http://cran.r-project.org/doc/manuals/R-intro.pdf) [@R15Introduction] and [*R Language Definition*](http://cran.r-project.org/doc/manuals/R-lang.pdf) [@RCoreTeam15RLanguage] at the CRAN website. R is widely used in both academia and industry.
+R \index{R} ^[http://www.r-project.org/] [@R-base] is a free software environment for statistical computing and graphics. It provides a wide variety of statistical and graphical techniques. R can be easily extended with `r available.packages(repos="https://cran.r-project.org") %>% nrow() %>% format(big.mark=",")` packages available on [CRAN](http://cran.r-project.org/) (as of `r format(Sys.Date(), format="%d %B %Y")`). In addition, there are many packages provided on other websites, such as [Bioconductor](http://www.bioconductor.org/), and also a lot of packages under development at [R-Forge](http://r-forge.r-project.org/) and [GitHub](https://github.com/). More details about R are available in [*An Introduction to R*](http://cran.r-project.org/doc/manuals/R-intro.pdf) [@R15Introduction] and [*R Language Definition*](http://cran.r-project.org/doc/manuals/R-lang.pdf) [@RCoreTeam15RLanguage] at the CRAN website. R is widely used in both academia and industry.
 
 
 To help users to find our which R packages to use, [the CRAN Task Views](http://cran.r-project.org/web/views/) are a good guidance. They provide collections of packages for different tasks. Some Task Views related to data mining are: 
@@ -39,9 +48,24 @@ Another guide to R for data mining is an *R Reference Card for Data Mining* (see
 Readers who want more information on R are referred to online resources at http://www.rdatamining.com/resources.
 
 
-### R Basics
+### R Basics 
 
 Please refer to *An Introduction to R* [@R15Introduction] for an introduction to basics of R programming.
+
+
+### Pipe Operation
+
+Different from its first edition, this book will use pipe operation provided by package magrittr [@R-magrittr]. Pipe operation is very convenient in that it helps avoid nested function calls and makes R code easy to understand. Moreover, it is also supported by packages dplyr [@R-dplyr] and ggplot2 [@R-ggplot2]. Therefore, pipe operations are receommended, especially when there are a series of transformations or nested function calls.
+
+Below is an example of pipe operations. Basically, in the second line of code, it applies function `fun1()` to object `a` first, then `fun2()` with a parameter `p`, and then `fun3()`, with the final result assigned to `b`. We can see that it is not easy to figure out what's happening from the second line. However, with pipe operations in the last line, we can clearly see that `a` is passed to `fun1()`, then to `fun2()` with paramenter `p` and finally to `fun3()`.
+
+```{r pipe, eval=F}
+library(magrittr) ## for pipe operations
+## traditional way
+b <- fun3( fun2( fun1(a), p) ) 
+## with pipe operations, the above can be rewritten to
+b <- a %>% fun1() %>% fun2(p) %>% fun3()
+```
 
 
 
@@ -57,10 +81,11 @@ When RStudio is launched for the first time, you can see a window similar to Fig
 - Files/Plots/Packages/Help/Viewer panel (bottom right), whose tabs show respectively a list of files, plots, R packages installed, help documentation and local web content.
 
 
-```{r rstudio, fig.cap="RStudio", echo=F}
+```{r rstudio, echo=F, fig.cap="RStudio", out.width='80%', fig.asp=.75, fig.align='center'}
 knitr::include_graphics("figures/rstudio.png")
 ```
 
+As an example, the source file is shown in the top-left panel in Figure \@ref(fig:rstudio). At first, upon running `a <- sample(10)`, a sample of 10 values are drawn and then are assigned to object `a`, and its value is displayed in top-right panel. After that, when running `print(a)`, the value of `a` is printed n the Console panel (bottom left). After running `barplot(a)`, a bar plot is drawn and displayed in bottom-right panel.
 
 It is always a good practice to begin R programming with an RStudio project, which is a folder where to put your R code, data files and figures. To create a new project, click
 the "Project" button at the top-right corner and then choose "New Project". After that, select "create project from new directory" and then "Empty Project". After typing a directory name, which will also be your project name, click "Create Project" to create your project folder and files. If you open an existing project, RStudio will automatically set the working directory to the project directory, which is very convenient. After that, create three folders as below:
@@ -81,7 +106,7 @@ In addition to above three folders which are usesul to most projects, depending 
 
 Some datasets used in this book are briefly described in this section.
 
-### The Iris Dataset \label{sec:intro:data:iris}
+### The Iris Dataset {#iris}
 The `iris` dataset has been used for classification in many research publications. It consists of 50 samples from each of three classes of iris flowers \cite{Frank10UCI}. One class is linearly separable from the other two, while the latter are not linearly separable from each other. There are five attributes in the dataset:
 
 - sepal length in cm,
@@ -92,7 +117,7 @@ The `iris` dataset has been used for classification in many research publication
 
 Detailed desription of the dataset and research publications citing it can be found at the UCI Machine Learning Repository ^[https://archive.ics.uci.edu/ml/datasets/Iris].
 
-Below we have a look at the structure of the dataset with \func{str()}. Note that all variable names, package names and function names in R are case sensitive. 
+Below we have a look at the structure of the dataset with `str()`. Note that all variable names, package names and function names in R are case sensitive. 
 ```{r}
 str(iris)
 head(iris)
@@ -101,7 +126,7 @@ From the output, we can see that there are 150 observations (records, or rows) a
 
 
 ### The Bodyfat Dataset \label{sec:intro:data:bodyfat}
-`Bodyfat` is a dataset available in package \pack{TH.data}[@Hothorn15THdata:]. It has 71 rows, and each row contains information of one person. It contains the following 10 numeric columns.
+`Bodyfat` is a dataset available in package TH.data [@R-TH.data]. It has 71 rows, and each row contains information of one person. It contains the following 10 numeric columns.
 
 - `age`: age in years.
 - `DEXfat`: body fat measured by DXA, response variable.

@@ -1,0 +1,6 @@
+Package: R and Data Mining
+Type: Book
+Title: R and Data Mining - Examples and Case Studies
+Version: 0.0.1
+Imports: bookdown
+Remotes: rstudio/bookdown

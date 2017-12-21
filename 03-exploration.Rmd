@@ -1,0 +1,240 @@
+# Data Exploration and Visualization
+
+This chapter shows examples on data exploration with R. It starts with inspecting the dimensionality, structure and data of an R object, followed by basic statistics and various charts like pie charts and histograms. Exploration of multiple variables are then demonstrated, including grouped distribution, grouped boxplots, scattered plot and pairs plot. After that, examples are presented on level plot, contour plot and 3D plot. It also shows how to saving charts into files of various formats.
+
+
+
+## Have a Look at Data
+
+The `iris` data \index{data exploration} is used in this chapter for demonstration of data exploration with R. See Section \@ref(iris) for details of the `iris` data.
+
+We first check the size and structure of data. In code below, function `dim()` returns the dimensionality of data, which shows that there are 150 observations (or rows or records) and 5 variables (or columns). The name of variables are returned by `names()`. Functions `str()` and `attributes()` return the structure and attributes of data.
+```{r}
+dim(iris)
+names(iris)
+str(iris)
+attributes(iris)
+```
+
+Next, we have a look at the first five rows of data.
+```{r}
+iris[1:5, ]
+```
+
+The first or last rows of data can be retrieved with `head()` or `tail()`, which by default return the first or last 6 rows. Alternatively, we can get a certain number of rows by setting the second parameter to both functions. For example, the first 10 rows will be returned with `head(iris, 10)`.
+```{r}
+head(iris)
+tail(iris)
+```
+
+A random sample of the data can be retrieved with function `sample()` in code below.
+```{r}
+## draw a sample of 5 rows
+idx <- sample(1:nrow(iris), 5)
+idx
+iris[idx, ]
+```
+
+
+We can also retrieve the values of a single column. For example, the first 10 values of `Sepal.Length` can be obtained in three different ways below.
+```{r}
+iris[1:10, "Sepal.Length"]
+iris[1:10, 1]
+iris$Sepal.Length[1:10]
+```
+
+
+
+
+
+## Explore Individual Variables
+
+Distribution of every numeric variable can be checked with function `summary()`, which returns the minimum, maximum, mean, median, and the first (25%) and third (75%) quartiles. Take `Sepal.Length` as an example, the result below shows that, its minimum value is 4.3 and the maximum 7.9. Its first quartile ("1st Qu."") is 5.1, which means that 25% out of all records have `Sepal.Length` below 5.1. Similarly, a value of 6.4 in the third quartile ("3rd Qu.") indidates that 75% out of all records have `Sepal.Length` below 6.4. It has a median of 5.8, which means that half of records have `Sepal.Length` below 5.8. The value of mean shows that the arithemetic mean (calculated by adding all values together and dividing by the number of values) of `Sepal.Length` is 5.843.
+
+For factors (or categorical variables), it shows the frequency of every level. In the result below, we can see that each one of the three Species, "setosa", "versicolor" and "virginica", has 50 observations.  
+
+
+```{r}
+summary(iris)
+```
+
+The mean, median and range can also be obtained respectively with functions with `mean()`, `median()` and `range()`. Quartiles and percentiles are supported by function `quantile()` as below, 
+```{r}
+quantile(iris$Sepal.Length)
+quantile(iris$Sepal.Length, c(0.1, 0.3, 0.65))
+```
+
+
+Then we check the variance of `Sepal.Length` with `var()`, and also check its distribution with histogram\index{histogram} and density using functions `hist()` and `density()`.
+```{r histogram, fig.cap='Histogram', out.width='80%', fig.asp=.75, fig.align='center'}
+var(iris$Sepal.Length)
+hist(iris$Sepal.Length)
+```
+
+
+```{r density, fig.cap='Density', out.width='80%', fig.asp=.75, fig.align='center'}
+plot(density(iris$Sepal.Length))
+```
+
+
+
+The frequency of a factor variable can be calculated with function `table()`, and then plotted as a pie chart\index{pie chart} with `pie()` or a bar chart\index{bar chart} with `barplot()`.
+```{r pie, fig.cap='Pie Chart', out.width='80%', fig.asp=.75, fig.align='center'}
+table(iris$Species)
+pie(table(iris$Species))
+```
+
+
+```{r bar, fig.cap='Bar Chart', out.width='80%', fig.asp=.75, fig.align='center'}
+barplot(table(iris$Species))
+```
+
+
+
+
+## Explore Multiple Variables
+After checking the distributions of individual variables, we then investigate the relationships between two variables. Below we calculate covariance and correlation between variables with `cov()` and `cor()`.
+```{r}
+cov(iris$Sepal.Length, iris$Petal.Length)
+cov(iris[,1:4])
+cor(iris$Sepal.Length, iris$Petal.Length)
+cor(iris[,1:4])
+```
+Correlation shows whether and how strongly a pair of variables are related to each other. It ranges from -1 to +1. The closer the correlation is to +1 (or -1), the more strongly the two variables are positively (or negatively) related. When it is close to zero, it means that there is no relationship between them. From above results, we can see that the correlation between `Sepal.Length` and  `Petal.Length` is 0.87, which means that they are positively related to each other. Similarly, `Sepal.Length` and `Petal.Width` are highly related, as well as `Petal.Length` and `Petal.Width`. In contrast, `Sepal.Width` is weakly negatively related with the other three.
+
+
+Next, we compute the stats of `Sepal.Length` of every `Species` with `aggregate()`. 
+```{r}
+aggregate(Sepal.Length ~ Species, summary, data=iris)
+```
+
+
+We then use function `boxplot()` to plot a box plot\index{box plot}, also known as box-and-whisker plot, to show the median, first and third quartile of a distribution (i.e., the 50%, 25% and 75% points in cumulative distribution), and outliers. The bar in the middle is the median. The box shows the interquartile range (IQR)\index{IQR}, which is the range between the 75% and 25% observation. The result shows that the three species are of different distributions in their `Sepal.Length`. "Virginica" tends to have large `Sepal.Length`,  "setosa" has small `Sepal.Length` and "versicolor" sits in between. It suggests that the varialbe can be used to predict the species of flowers. 
+```{r voxplot, fig.cap='Boxplot', out.width='80%', fig.asp=.75, fig.align='center'}
+boxplot(Sepal.Length ~ Species, data=iris, xlab="Species", ylab="Sepal.Length")
+```
+
+
+A scatter plot\index{scatter plot} can be drawn for two numeric variables with `plot()` as below. Using function `with()`, we don't need to add `iris$` before variable names. In the code below, the colors (`col`) and symbols (`pch`) of points are set to `Species`. 
+```{r scatter, fig.cap='Scatter Plot', out.width='80%', fig.asp=.75, fig.align='center'}
+with(iris, plot(Sepal.Length, Sepal.Width, col=Species, pch=as.numeric(Species)))
+## same function as above 
+# plot(iris$Sepal.Length, iris$Sepal.Width, col=iris$Species, pch=as.numeric(iris$Species))
+```
+
+When there are many points, some of them may overlap. We can use `jitter()` to add a small amount of noise to the data before plotting.
+```{r jitter, fig.cap='Scatter Plot with Jitter', out.width='80%', fig.asp=.75, fig.align='center'}
+plot(jitter(iris$Sepal.Length), jitter(iris$Sepal.Width))
+```
+ 
+A smooth scatter plot can be plotted with function `smoothScatter()`, which a smoothed color density representation of the scatterplot, obtained through a kernel density estimate.
+```{r smooth, fig.cap='Smooth Scatter Plot', out.width='80%', fig.asp=.75, fig.align='center'}
+smoothScatter(iris$Sepal.Length, iris$Sepal.Width)
+```
+
+
+A matrix of scatter plots can be produced with function `pairs()`, where each sub figure is the scatter plot of a pair of variables.
+```{r matrix, fig.cap='A Matrix of Scatter Plots', out.width='80%', fig.asp=.75, fig.align='center'}
+pairs(iris)
+```
+
+
+
+## More Explorations
+
+This section presents some fancy graphs, including 3D plots, level plots, contour plots, interactive plots and parallel coordinates.
+
+
+A 3D scatter plot \index[functions]{scatterplot3d()} can be produced with package scatterplot3d \pack{scatterplot3d} [@R-scatterplot3d]. 
+```{r 3d, fig.cap='3D Scatter plot', out.width='80%', fig.asp=.75, fig.align='center'}
+library(scatterplot3d)
+scatterplot3d(iris$Petal.Width, iris$Sepal.Length, iris$Sepal.Width)
+```
+
+
+
+Package rgl \pack{rgl} [@R-rgl] supports interactive 3D scatter plot with `plot3d()`.
+```{r plot3d, fig.cap='Interactive 3D Scatter plot', out.width='80%', fig.asp=.75, fig.align='center'}
+library(rgl) 
+plot3d(iris$Petal.Width, iris$Sepal.Length, iris$Sepal.Width)
+```
+
+
+
+A heat map\index{heat map} presents a 2D display of a data matrix, which can be generated with `heatmap()` in R. With the code below, we calculate the similarity between different flowers in the `iris` data with `dist()` and then plot it with a heat map.
+```{r heatmap, fig.cap='Heat Map', out.width='80%', fig.asp=.75, fig.align='center'}
+distMatrix <- as.matrix(dist(iris[,1:4]))
+heatmap(distMatrix)
+```
+
+
+A level plot \index{level plot} can be produced with function `levelplot()` in package lattice\pack{lattice} [@R-lattice]. Function `grey.colors()` creates a vector of gamma-corrected gray colors. A similar function is `rainbow()`, which creates a vector of contiguous colors.
+```{r levelplot, fig.cap='Level Plot', out.width='80%', fig.asp=.75, fig.align='center'}
+library(lattice)
+levelplot(Petal.Width~Sepal.Length*Sepal.Width, iris, cuts=9,
+          col.regions=grey.colors(10)[10:1])
+```
+
+
+Contour plots \index{contour plot} can be plotted with `contour()` and `filled.contour()` in package graphics\pack{graphics}, and with `contourplot()` in package lattice\pack{lattice}.
+```{r contour, fig.cap='Contour', out.width='80%', fig.asp=.75, fig.align='center'}
+filled.contour(volcano, color=terrain.colors, asp=1, 
+               plot.axes=contour(volcano, add=T))
+```
+
+
+Another way to illustrate a numeric matrix is a 3D surface plot\index{3D surface plot} shown as below, which is generated with function `persp()`.
+```{r surface, fig.cap='3D Surface', out.width='80%', fig.asp=.75, fig.align='center'}
+persp(volcano, theta=25, phi=30, expand=0.5, col="lightblue")    
+```
+
+    
+Parallel coordinates\index{parallel coordinates} provide nice visualization of multiple dimensional data. A parallel coordinates plot can be produced with `parcoord()` in package MASS\pack{MASS} [@R-MASS], and with `parallelplot()` in package lattice\pack{lattice} [@R-lattice].
+```{r parallel, fig.cap='Parallel Coordinates - I', out.width='80%', fig.asp=.75, fig.align='center'}
+library(MASS)
+parcoord(iris[1:4], col=iris$Species)
+```
+
+
+```{r parallel2, fig.cap='Parallel Coordinates - II', out.width='80%', fig.asp=.75, fig.align='center'}
+library(lattice)
+parallelplot(~iris[1:4] | Species, data=iris)
+```
+
+
+Package ggplot2\pack{ggplot2} [@R-ggplot2] supports complex graphics, which are very useful for exploring data. A simple example is given below. More examples on that package can be found at \url{http://had.co.nz/ggplot2/}.
+```{r scatter-ggplot2, fig.cap='Scatter Plot with Package *ggplot2*', out.width='80%', fig.asp=.75, fig.align='center'}
+library(ggplot2)
+qplot(Sepal.Length, Sepal.Width, data=iris, facets=Species ~.)
+```
+
+
+
+## Interactive Graphics
+
+Interactive graphics are supported by packages ggvis\pack{ggvis} [@R-ggvis] and googleVis\pack{googleVis} [@R-googleVis]. 
+
+
+
+## Save Charts into Files
+
+If there are many graphs produced in data exploration, a good practice is to save them into files. R provides a variety of functions for that purpose. Below are examples of saving charts into PDF and PS files respectively with functions `pdf()` and `postscript()`. Picture files of BMP, JPEG, PNG and TIFF formats can be generated respectively with `bmp()`, `jpeg()`, `png()` and `tiff()`. Note that the files (or graphics devices) need be closed with `graphics.off()` or `dev.off()` after plotting.
+
+
+```{r save-plot, eval=FALSE}
+# save as a PDF file
+pdf("myPlot.pdf")
+x <- 1:50
+plot(x, log(x))
+graphics.off()
+# Save as a postscript file
+postscript("myPlot2.ps")
+x <- -20:20
+plot(x, x^2)
+graphics.off()
+```
+
+
+
+## Further Readings
+Besides the basic plots presented in this chapter, R can produce complex and nice graphics with Package ggplot2 \pack{ggplot2}[@R-ggplot2]. Moreover, R can also produce interactive graphs. Two widely used packages for that purpose are ggvis\pack{ggvis} and googleVis\pack{googleVis}. Package [ggvis](https://cran.r-project.org/web/packages/ggvis/index.html)[@R-ggvis] is an implementation of an interactive grammar of graphics. Package [googleVis](https://cran.r-project.org/web/packages/googleVis/index.html)[@R-googleVis] provides an R interface to Google Charts API, allowing users to create interactive charts based on data frames. 
