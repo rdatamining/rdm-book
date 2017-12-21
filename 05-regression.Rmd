@@ -1,0 +1,156 @@
+# Regression
+
+
+Regression \index{regression} is to build a function of *independent variables* (also known as *predictors*) to predict a *dependent variable* (also called *response*). For example, banks assess the risk of home-loan applicants based on their age, income, expenses, occupation, number of dependents, total credit limit, etc.
+
+This chapter introduces basic concepts and presents examples of various regression techniques. At first, it shows an example on building a linear regression model to predict Consumer Price Index (CPI) data. After that, it introduces logistic regression. The generalized linear model (GLM) is then presented, followed by a brief introduction of non-linear regression.
+
+A collection of some helpful R functions for regression analysis is available as a reference card on
+[R Functions for Regression Analysis](http://cran.r-project.org/doc/contrib/Ricci-refcard-regression.pdf).
+
+
+
+## Linear Regression
+
+Linear regression \index{linear regression} is to predict response with a linear function of predictors as follows:
+\[y = c_0 + c_1 x_1 + c_2 x_2 + \cdots + c_k x_k,\]
+where $x_1, x_2, \cdots, x_k$ are predictors and $y$ is the response to predict.
+
+
+Linear regression is demonstrated below with function `lm()` on the Australian CPI data, which are quarterly CPIs from 2008 to 2010 extracted from [the Australian Bureau of Statistics website](http://www.abs.gov.au).
+
+At first, the data is created and plotted. In the code below, an x-axis is added manually with function `axis()`, where `las=3` makes text vertical.
+
+```{r cpi, fig.cap='Australian CPIs', out.width='80%', fig.asp=.75, fig.align='center'}
+# cpi <- read.csv("CPI.csv")
+year <- rep(2008:2010, each=4)
+quarter <- rep(1:4, 3)
+cpi <- c(162.2, 164.6, 166.5, 166.0, 
+         166.2, 167.0, 168.6, 169.5, 
+         171.0, 172.1, 173.3, 174.0)
+plot(cpi, xaxt="n", ylab="CPI", xlab="")
+# draw x-axis
+axis(1, labels=paste(year,quarter,sep="Q"), at=1:12, las=3)
+```
+
+
+We then check the correlation between `CPI` and the other variables, `year` and `quarter`.
+```{r}
+cor(year,cpi)
+cor(quarter,cpi)
+```
+
+Then a linear regression model is built with function `lm()` on the above data, using `year` and `quarter` as predictors and `CPI` as response.
+```{r}
+fit <- lm(cpi ~ year + quarter)
+fit
+```
+
+
+With the above linear model, CPI is calculated as
+\[\mathrm{cpi} = c_0 + c_1*\mathrm{year} + c_2*\mathrm{quarter},\]
+where $c_0$, $c_1$ and $c_2$ are coefficients from model `fit`. Therefore, the CPIs in 2011 can be get as follows. An easier way for this is using function `predict()`, which will be demonstrated at the end of this subsection.
+```{r}
+(cpi2011 <- fit$coefficients[[1]] + fit$coefficients[[2]]*2011 +
+            fit$coefficients[[3]]*(1:4))
+```
+
+
+More details of the model can be obtained with the code below.
+```{r}
+attributes(fit)
+fit$coefficients
+```
+
+The differences between observed values and fitted values can be obtained with function `residuals()`.
+```{r}
+# differences between observed values and fitted values
+residuals(fit)
+summary(fit)
+```
+
+
+We then plot the fitted model as below.
+```{r, eval=F}
+plot(fit)
+```
+
+```{r regression-predition, fig.cap='Prediction with Linear Regression Model - 1', out.width='90%', fig.asp=1, fig.align='center', echo=F}
+## The chunk above simply output code to document, and the results are produced by the chunk below.
+layout(matrix(c(1,2,3,4),2,2)) # 4 graphs per page 
+plot(fit)
+layout(matrix(1)) # change back to one graph per page 
+```
+
+
+We can also plot the model in a 3D plot as below, where function `scatterplot3d()` creates a 3D scatter plot and `plane3d()` draws the fitted plane. Parameter `lab` specifies the number of tickmarks on the x- and y-axes.
+```{r fitted-model, fig.cap='A 3D Plot of the Fitted Model', out.width='80%', fig.asp=.75, fig.align='center'}
+library(scatterplot3d)
+s3d <- scatterplot3d(year, quarter, cpi, highlight.3d=T, type="h", lab=c(2,3))
+s3d$plane3d(fit)
+```
+
+
+
+
+With the model, the CPIs in year 2011 can be predicted as follows, and the predicted values are shown as red triangles in Figure \@ref(fig:cpi-prediction).
+```{r cpi-prediction, fig.cap='Prediction of CPIs in 2011 with Linear Regression Model', out.width='80%', fig.asp=.75, fig.align='center'}
+data2011 <- data.frame(year=2011, quarter=1:4)
+cpi2011 <- predict(fit, newdata=data2011)
+style <- c(rep(1,12), rep(2,4))
+plot(c(cpi, cpi2011), xaxt="n", ylab="CPI", xlab="", pch=style, col=style)
+axis(1, at=1:16, las=3,
+     labels=c(paste(year,quarter,sep="Q"), "2011Q1", "2011Q2", "2011Q3", "2011Q4"))
+```
+
+
+
+
+## Logistic Regression
+
+Logistic regression \index{logistic regression} is used to predict the probability of occurrence of an event by fitting data to a logistic curve. A logistic regression model is built as the following equation:
+\[logit(y) = c_0 + c_1 x_1 + c_2 x_2 + \cdots + c_k x_k,\] 
+where $x_1, x_2, \cdots, x_k$ are predictors, $y$ is a response to predict, and $logit(y) = ln(\frac{y}{1-y})$.
+The above equation can also be written as \[y = \frac{1}{1+e^{-(c_0 + c_1 x_1 + c_2 x_2 + \cdots + c_k x_k)}}.\]
+
+Logistic regression can be built with function `glm()` by setting `family` to `binomial(link="logit")`.
+
+Detailed introductions on logistic regression can be found at the following links.
+
+- [R Data Analysis Examples - Logit Regression](http://www.ats.ucla.edu/stat/r/dae/logit.htm)
+- [Logistic Regression (with R)](http://nlp.stanford.edu/~manning/courses/ling289/logistic.pdf)
+
+
+
+
+## Generalized Linear Regression}
+
+The generalized linear model (GLM) \index{generalized linear regression} \index{generalized linear model} generalizes linear regression by allowing the linear model to be related to the response variable via a link function and allowing the magnitude of the variance of each measurement to be a function of its predicted value. It unifies various other statistical models, including linear regression, logistic regression and Poisson regression. Function `glm()` is used to fit generalized linear models, specified by giving a symbolic description of the linear predictor and a description of the error distribution. 
+
+A generalized linear model is built below with `glm()` on the `bodyfat` data (see Section \@ref(intro:bodyfat) for details of the data).
+
+
+```{r}
+data("bodyfat", package="TH.data")
+myFormula <- DEXfat ~ age + waistcirc + hipcirc + elbowbreadth + kneebreadth
+bodyfat.glm <- glm(myFormula, family = gaussian("log"), data = bodyfat)
+summary(bodyfat.glm)
+pred <- predict(bodyfat.glm, type="response")
+```
+In the code above, `type` indicates the type of prediction required. The default is on the scale of the linear predictors, and the alternative `response` is on the scale of the response variable.
+
+```{r bodyfat-pred, fig.cap='Prediction with Generalized Linear Regression Model', out.width='80%', fig.asp=.75, fig.align='center'}
+plot(bodyfat$DEXfat, pred, xlab="Observed Values", ylab="Predicted Values")
+abline(a=0, b=1)
+```
+
+In the above code, if `family=gaussian("identity")` is used, the built model would be similar to linear regression. One can also make it a logistic regression by setting `family` to `binomial("logit")`.
+
+
+
+
+## Non-linear Regression
+While linear regression is to find the line that comes closest to data, non-linear regression \index{non-linear regression} is to fit a curve through data. Function `nls()` provides nonlinear regression. Examples of `nls()` can be found by running `?nls` under R.
+
+
+

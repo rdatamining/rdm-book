@@ -6,7 +6,7 @@ This chapter shows examples on data exploration with R. It starts with inspectin
 
 ## Have a Look at Data
 
-The `iris` data \index{data exploration} is used in this chapter for demonstration of data exploration with R. See Section \@ref(iris) for details of the `iris` data.
+The `iris` data \index{data exploration} is used in this chapter for demonstration of data exploration with R. See Section \@ref(intro:iris) for details of the `iris` data.
 
 We first check the size and structure of data. In code below, function `dim()` returns the dimensionality of data, which shows that there are 150 observations (or rows or records) and 5 variables (or columns). The name of variables are returned by `names()`. Functions `str()` and `attributes()` return the structure and attributes of data.
 ```{r}

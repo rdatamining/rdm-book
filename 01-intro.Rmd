@@ -106,7 +106,7 @@ In addition to above three folders which are usesul to most projects, depending 
 
 Some datasets used in this book are briefly described in this section.
 
-### The Iris Dataset {#iris}
+### The Iris Dataset {#intro:iris}
 The `iris` dataset has been used for classification in many research publications. It consists of 50 samples from each of three classes of iris flowers \cite{Frank10UCI}. One class is linearly separable from the other two, while the latter are not linearly separable from each other. There are five attributes in the dataset:
 
 - sepal length in cm,
@@ -125,7 +125,7 @@ head(iris)
 From the output, we can see that there are 150 observations (records, or rows) and 5 variables (or columns) in the dataset. The first four variables are numeric. The last one, `Species`, is categoric (called as "factor" in R) and has three levels of values.
 
 
-### The Bodyfat Dataset \label{sec:intro:data:bodyfat}
+### The Bodyfat Dataset {#intro:bodyfat}
 `Bodyfat` is a dataset available in package TH.data [@R-TH.data]. It has 71 rows, and each row contains information of one person. It contains the following 10 numeric columns.
 
 - `age`: age in years.

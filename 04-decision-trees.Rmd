@@ -1,0 +1,177 @@
+```{r, results='hide', echo=F}
+# load libraries
+library(party)
+library(randomForest)
+```
+
+
+# Decision Trees and Random Forest
+
+
+This chapter shows how to build predictive models with packages *party*, *rpart* and *randomForest*. It starts with building decision trees\index{decision tree} with package *party* and using the built tree for classification, followed by another way to build decision trees with package *rpart*. After that, it presents an example on training a random forest model with package *randomForest*.
+
+
+
+## Decision Trees with Package *party*
+
+This section shows how to build a decision tree for the `iris` data with function `ctree()` in package *party* [@R-party]. Details of the dataset can be found in Section \@ref(intro:iris). `Sepal.Length`, `Sepal.Width`, `Petal.Length` and `Petal.Width` are used to predict the `Species` of flowers. In the package, function `ctree()` builds a decision tree, and `predict()` makes prediction for new data.
+
+
+Before modeling, the `iris` data is split below into two subsets: training (70%) and test (30%). The random seed is set to a fixed value below to make the results reproducible.
+
+```{r load-iris}
+str(iris)
+set.seed(1234) 
+ind <- sample(2, nrow(iris), replace=TRUE, prob=c(0.7, 0.3))
+trainData <- iris[ind==1,]
+testData <- iris[ind==2,]
+```
+
+We then load package *party*, build a decision tree, and check the prediction result. Function `ctree()` provides some parameters, such as `MinSplit`, `MinBusket`, `MaxSurrogate` and `MaxDepth`, to control the training of decision trees. Below we use default settings to build a decision tree. Examples of setting the above parameters are available in \autoref{ch:response}. In the code below, `myFormula` specifies that `Species` is the target variable and all other variables are independent variables.
+
+```{r ctree}
+library(party)
+myFormula <- Species ~ Sepal.Length + Sepal.Width + Petal.Length + Petal.Width
+iris_ctree <- ctree(myFormula, data=trainData)
+# check the prediction
+table(predict(iris_ctree), trainData$Species)
+```
+
+After that, we can have a look at the built tree by printing the rules and plotting the tree.
+
+```{r}
+print(iris_ctree)
+```
+
+```{r decision-tree1, fig.cap='Decision Tree', out.width='80%', fig.asp=.75, fig.align='center'}
+plot(iris_ctree)
+```
+
+
+```{r decision-tree2, fig.cap='Decision Tree (Simple Style)', out.width='80%', fig.asp=.75, fig.align='center'}
+plot(iris_ctree, type="simple")
+```
+
+In the above Figure \@ref(fig:decision-tree1), the barplot for each leaf node shows the probabilities of an instance falling into the three species. In Figure \@ref(fig:decision-tree2), they are shown as"y" in leaf nodes. For example, node 2 is labeled with "n=40, y=(1, 0, 0)", which means that it contains 40 training instances and all of them belong to the first class "setosa".
+
+
+After that, the built tree needs to be tested with test data.
+```{r}
+# predict on test data
+testPred <- predict(iris_ctree, newdata = testData)
+table(testPred, testData$Species)
+```
+
+                                                                           
+<!-- The current version of `ctree()` (i.e. version 0.9-9995) does not handle missing values well, in that an instance with a missing value may sometimes go to the left sub-tree and sometimes to the right. This might be caused by surrogate rules. -->
+
+A problem with decision trees is that, when a variable exists in training data and is fed into `ctree()` but does not appear in the built decision tree, the test data must also have that variable to make prediction. Otherwise, a call to `predict()` would fail. Moreover, if the value levels of a categorical variable in test data are different from that in training data, it would also fail to make prediction on the test data. One way to get around the above issue is, after building a decision tree, to call `ctree()` to build a new decision tree with data containing only those variables existing in the first tree, and to explicitly set the levels of categorical variables in test data to the levels of the corresponding variables in training data. An example on that can be found in Section \@ref(response:scoring).
+
+
+
+## Decision Trees with Package *rpart*
+
+Package *rpart* [@R-rpart] is used in this section to build a decision tree on the `bodyfat` data (see Section \@ref(intro:bodyfat) for details of the data). Function `rpart()` is used to build a decision tree, and the tree with the minimum prediction error is selected. After that, it is applied to new data to make prediction with function `predict()`.
+
+At first, we load the `bodyfat` data and have a look at it.
+```{r load-bodyfat}
+data("bodyfat", package = "TH.data")
+dim(bodyfat)
+attributes(bodyfat)
+bodyfat[1:5,]
+```
+
+Next, the data is split into training and test subsets, and a decision tree is built on the training data.
+```{r rpart}
+set.seed(1234) 
+ind <- sample(2, nrow(bodyfat), replace=TRUE, prob=c(0.7, 0.3))
+bodyfat.train <- bodyfat[ind==1,]
+bodyfat.test <- bodyfat[ind==2,]
+# train a decision tree
+library(rpart)
+myFormula <- DEXfat ~ age + waistcirc + hipcirc + elbowbreadth + kneebreadth
+bodyfat_rpart <- rpart(myFormula, data = bodyfat.train, 
+                       control = rpart.control(minsplit = 10))
+attributes(bodyfat_rpart)
+print(bodyfat_rpart$cptable)
+print(bodyfat_rpart)
+```
+
+With the code below, the built tree is plotted (see Figure \@ref(fig:tree-rpart1)).
+```{r tree-rpart1, fig.cap='Decision Tree with Package rpart', out.width='80%', fig.width=12, fig.asp=.75, fig.align='center'}
+plot(bodyfat_rpart)
+text(bodyfat_rpart, use.n=T)
+```
+
+
+The basic rpart plot is not very nice. Fortunately, a better tree plot can be produced with package *rpart.plot* [@R-rpart.plot] as below.
+```{r}
+library(rpart.plot)
+rpart.plot(bodyfat_rpart)
+```
+
+
+Then we select the tree with the minimum prediction error (see Figure \@ref(fig:tree-rpart2)).
+```{r tree-rpart2, fig.cap='Selected Decision Tree', out.width='80%', fig.asp=.75, fig.align='center'}
+opt <- which.min(bodyfat_rpart$cptable[,"xerror"])
+cp <- bodyfat_rpart$cptable[opt, "CP"]
+bodyfat_prune <- prune(bodyfat_rpart, cp = cp)
+print(bodyfat_prune)
+rpart.plot(bodyfat_prune)
+```
+
+
+After that, the selected tree is used to make prediction and the predicted values are compared with actual labels. In the code below, function `abline()` draws a diagonal line. The predictions of a good model are expected to be equal or very close to their actual values, that is, most points should be on or close to the diagonal line.
+```{r result-rpart, fig.cap='Prediction Result', out.width='80%', fig.asp=.75, fig.align='center'}
+DEXfat_pred <- predict(bodyfat_prune, newdata=bodyfat.test)
+xlim <- range(bodyfat$DEXfat)
+plot(DEXfat_pred ~ DEXfat, data=bodyfat.test, xlab="Observed", 
+     ylab="Predicted", ylim=xlim, xlim=xlim)
+abline(a=0, b=1)
+```
+
+
+
+## Random Forest
+
+Package *randomForest* \index{random forest} [@R-randomForest] is used below to build a predictive model for the `iris` data (see \@ref(intro:iris) for details of the data). There are two limitations with function `randomForest()`. First, it cannot handle data with missing values, and users have to impute data before feeding them into the function. Second, there is a limit of 32 to the maximum number of levels of each categorical attribute. Attributes with more than 32 levels have to be transformed first before using `randomForest()`.
+
+An alternative way to build a random forest is to use function `cforest()` from package *party*, which is not limited to the above maximum levels. However, generally speaking, categorical variables with more levels will need more memory and take longer time to build a random forest.
+
+Again, the `iris` data is first split into two subsets: training (70%) and test (30%).
+```{r rf-sample}
+ind <- sample(2, nrow(iris), replace=TRUE, prob=c(0.7, 0.3))
+trainData <- iris[ind==1,]
+testData <- iris[ind==2,]
+```
+
+Then we load package *randomForest* and train a random forest. In the code below, the formula is set to `Species ~ .`, which means to predict `Species` with all other variables in the dataset.
+```{r random-forest}
+library(randomForest)
+rf <- randomForest(Species ~ ., data=trainData, ntree=100, proximity=TRUE)
+table(predict(rf), trainData$Species)
+print(rf)
+attributes(rf)
+```
+
+
+After that, we plot the error rates with various number of trees.
+```{r error-rate, fig.cap='Error Rate of Random Forest', out.width='80%', fig.asp=.75, fig.align='center'}
+plot(rf)
+```
+
+
+The importance of variables can be obtained with functions `importance()` and `varImpPlot()`.
+```{r var-importance, fig.cap='Variable Importance', out.width='80%', fig.asp=.75, fig.align='center'}
+importance(rf)
+varImpPlot(rf)
+```
+
+
+Finally, the built random forest is tested on test data, and the result is checked with functions `table()` and `margin()`. The margin of a data point is as the proportion of votes for the correct class minus maximum proportion of votes for other classes. Generally speaking, positive margin means correct classification.
+```{r margin, fig.cap='Margin of Predictions', out.width='80%', fig.asp=.75, fig.align='center'}
+irisPred <- predict(rf, newdata=testData)
+table(irisPred, testData$Species)
+plot(margin(rf, testData$Species))
+```
+
