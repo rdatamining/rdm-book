@@ -1,0 +1,288 @@
+```{r, results='hide', echo=F}
+# load libraries
+library(dtw)
+library(wavelets)
+library(party)
+```
+
+
+# Time Series Analysis and Mining {#ts}
+
+
+This chapter presents examples on time series decomposition, forecasting, clustering and classification\index{time series}. The first section introduces briefly time series data in R. The second section shows an example on decomposing time series into trend, seasonal and random components. The third section presents how to build an autoregressive integrated moving average (ARIMA) model in R and use it to predict future values. The fourth section introduces Dynamic Time Warping (DTW) and hierarchical clustering of time series data with Euclidean distance and with DTW distance. The fifth section shows three examples on time series classification: one with original data, the other with DWT (Discrete Wavelet Transform) transformed data, and another with $k$-NN classification. The chapter ends with discussions and further readings.
+
+
+
+## Time Series Data in R {#ts:class}
+
+Class `ts` represents data which has been sampled at equispaced points in time. 
+A frequency of 7 indicates that a time series is composed of weekly data, and 12 and 4 are used respectively for monthly and quarterly series. An example below shows the construction of a time series with 30 values (1 to 30). `Frequency=12` and `start=c(2011,3)` specify that it is a monthly series starting from March 2011.
+
+```{r}
+a <- ts(1:30, frequency=12, start=c(2011,3))
+print(a)
+str(a)
+attributes(a)
+```
+
+
+
+## Time Series Decomposition {#ts:decomp}
+
+Time Series Decomposition \index{time series decomposition} is to decompose a time series into trend, seasonal, cyclical and irregular components\index{seasonal component}. The trend component stands for long term trend, the seasonal component is seasonal variation, the cyclical component is repeated but non-periodic fluctuations, and the residuals are irregular component.
+
+A time series of `AirPassengers` is used below as an example to demonstrate time series decomposition. It is composed of monthly totals of Box \& Jenkins international airline passengers from 1949 to 1960. It has 144(=12*12) values.
+
+
+```{r ts-airpassengers, fig.cap='A Time Series of *AirPassengers*', out.width='80%', fig.asp=.75, fig.align='center'}
+plot(AirPassengers)
+```
+
+Function `decompose()` is applied below to `AirPassengers` to break it into various components.
+
+```{r, eval=F}
+# decompose time series
+apts <- ts(AirPassengers, frequency=12)
+f <- decompose(apts)
+```
+
+If package *igraph* has been loaded, you may get an error saying "Error in decompose(apts) : Not a graph object". The reason is that function `decomposed()` from package *stats* is maksed by a function with the same name from package *igraph* [@R-igraph]. To avoid above error, please run code instead, which tells R to run the `decompose()` function from package *stats*.
+
+```{r}
+apts <- ts(AirPassengers, frequency=12)
+f <- stats::decompose(apts)
+```
+
+
+```{r ts-seasonal, fig.cap='Seasonal Component', out.width='80%', fig.asp=.75, fig.align='center'}
+# seasonal figures
+f$figure
+plot(f$figure, type="b", xaxt="n", xlab="")
+# get names of 12 months in English words
+monthNames <- months(ISOdate(2011,1:12,1))
+# label x-axis with month names 
+# las is set to 2 for vertical label orientation
+axis(1, at=1:12, labels=monthNames, las=2) 
+```
+
+
+```{r ts-decompose, fig.cap='Time Series Decomposition', out.width='80%', fig.asp=.75, fig.align='center'}
+plot(f)
+```
+
+In Figure \@ref(fig:ts-decompose), the first chart is the original time series. The second is trend of the data, the third shows seasonal factors, and the last chart is the remaining components after removing trend and seasonal factors. 
+
+Some other functions for time series decomposition are `stl()` in package *stats* [@R-stats], `decomp()` in package *timsac* [@R-timsac], and `tsr()` in package *ast* [@R-ast].
+
+
+
+## Time Series Forecasting {#ts:forecast}
+
+Time series forecasting \index{time series forecasting}\index{forecasting} is to forecast future events based on historical data. One example is to predict the opening price of a stock based on its past performance. Two popular models for time series forecasting are autoregressive moving average (ARMA) and autoregressive integrated moving average (ARIMA)\index{ARIMA}.
+
+Here is an example to fit an ARIMA model to a univariate time series and then use it for forecasting.
+
+```{r ts-forecast, fig.cap='Time Series Forecast', out.width='80%', fig.asp=.75, fig.align='center'}
+fit <- arima(AirPassengers, order=c(1,0,0), list(order=c(2,1,0), period=12))
+fore <- predict(fit, n.ahead=24)
+# error bounds at 95% confidence level
+U <- fore$pred + 2*fore$se
+L <- fore$pred - 2*fore$se
+ts.plot(AirPassengers, fore$pred, U, L, col=c(1,2,4,4), lty = c(1,1,2,2))
+legend("topleft", c("Actual", "Forecast", "Error Bounds (95% Confidence)"),
+       col=c(1,2,4), lty=c(1,1,2))
+```
+
+In \@ref(fig:ts-forecast), the red solid line shows the forecasted values, and the blue dotted lines are error bounds at a confidence level of 95%.
+
+
+
+## Time Series Clustering {#ts:cluster}
+
+Time series clustering \index{time series clustering} is to partition time series data into groups based on similarity or distance, so that time series in the same cluster are similar to each other. There are various measures of distance or dissimilarity, such as Euclidean distance, Manhattan distance, Maximum norm, Hamming distance, the angle between two vectors (inner product), and Dynamic Time Warping (DTW) distance.
+
+
+### Dynamic Time Warping
+
+Dynamic Time Warping (DTW) \index{dynamic time warping}\index{DTW|see{dynamic time warping}} finds optimal alignment between two time series \@ref(Keogh01Derivative) and an implement of it in R is package *dtw* [@R-dtw]. In that package, function `dtw(x, y, ...)`\index[functions]{dtw()} computes dynamic time warp and finds optimal alignment between two time series `x` and `y`, and `dtwDist(mx, my=mx, ...)`\index[functions]{dtwDist()} or `dist(mx, my=mx, method="DTW", ...)`\index[functions]{dist()} calculates the distances between time series `mx` and `my`.
+
+
+```{r ts-dtw, fig.cap='Alignment with Dynamic Time Warping', out.width='80%', fig.asp=.75, fig.align='center'}
+library(dtw)
+idx <- seq(0, 2*pi, len=100)
+a <- sin(idx) + runif(100)/10
+b <- cos(idx)
+align <- dtw(a, b, step=asymmetricP1, keep=T)
+dtwPlotTwoWay(align)
+```
+
+
+### Synthetic Control Chart Time Series Data
+
+[The synthetic control chart time series](http://kdd.ics.uci.edu/databases/synthetic_control/synthetic_control.html) is used in the examples in the following sections. The dataset contains 600 examples of control charts synthetically generated by the process in Alcock and Manolopoulos (1999). Each control chart is a time series with 60 values, and there are six classes:
+
+- 1-100: Normal;
+- 101-200: Cyclic;
+- 201-300: Increasing trend;
+- 301-400: Decreasing trend;
+- 401-500: Upward shift; and
+- 501-600: Downward shift.
+
+Firstly, the data is read into R with `read.table()`. Parameter `sep` is set to `""` (no space between double quotation marks), which is used when the separator is white space, i.e., one or more spaces, tabs, newlines or carriage returns.
+
+```{r ts-control-chart, fig.cap='Six Classes in Synthetic Control Chart Time Series', out.width='80%', fig.asp=.75, fig.align='center'}
+sc <- read.table("./data/synthetic_control.data", header=F, sep="")
+# show one sample from each class
+idx <- c(1,101,201,301,401,501)
+sample1 <- t(sc[idx,])
+plot.ts(sample1, main="")
+```
+
+
+### Hierarchical Clustering with Euclidean Distance \index{hierarchical clustering}
+
+At first, we select 10 cases randomly from each class. Otherwise, there will be too many cases and the plot of hierarchical clustering will be over crowded.
+
+```{r}
+set.seed(6218)
+```
+
+```{r ts-clustering-euclidean, fig.cap='Hierarchical Clustering with Euclidean Distance', out.width='80%', fig.asp=.75, fig.align='center'}
+n <- 10
+s <- sample(1:100, n)
+idx <- c(s, 100+s, 200+s, 300+s, 400+s, 500+s)
+sample2 <- sc[idx,]
+observedLabels <- rep(1:6, each=n)
+# hierarchical clustering with Euclidean distance
+hc <- hclust(dist(sample2), method="average")
+plot(hc, labels=observedLabels, main="")
+# cut tree to get 6 clusters
+rect.hclust(hc, k=6)
+memb <- cutree(hc, k=6)
+table(observedLabels, memb)
+```
+
+
+The clustering result in Figure \@ref(fig:ts-clustering-euclidean)  shows that, increasing trend (class 3) and upward shift (class 5) are not well separated, and decreasing trend (class 4) and downward shift (class 6) are also mixed.
+
+
+
+### Hierarchical Clustering with DTW Distance
+
+\index{hierarchical clustering} \index{DTW}
+
+Next, we try hierarchical clustering with the DTW distance.
+
+```{r ts-clustering-dtw, fig.cap='Hierarchical Clustering with DTW Distance', out.width='80%', fig.asp=.75, fig.align='center'}
+library(dtw)
+distMatrix <- dist(sample2, method="DTW")
+hc <- hclust(distMatrix, method="average")
+plot(hc, labels=observedLabels, main="")
+# cut tree to get 6 clusters
+rect.hclust(hc, k=6)
+memb <- cutree(hc, k=6)
+table(observedLabels, memb)
+```
+
+By comparing Figure \@ref(fig:ts-clustering-dtw) with Figure \@ref(fig:ts-clustering-euclidean), we can see that the DTW distance are better than the Euclidean distance for measuring the similarity between time series.
+
+
+
+## Time Series Classification {#sec:ts:classify}
+
+Time series classification \index{time series classification} is to build a classification model based on labeled time series and then use the model to predict the label of unlabeled time series. New features extracted from time series may help to improve the performance of classification models. Techniques for feature extraction include Singular Value Decomposition (SVD), Discrete Fourier Transform (DFT), Discrete Wavelet Transform (DWT), Piecewise Aggregate Approximation (PAA), Perpetually Important Points (PIP), Piecewise Linear Representation, and Symbolic Representation.
+
+
+### Classification with Original Data
+
+We use `ctree()` from package *party* [@R-party] to demonstrate classification of time series with the original data. The class labels are changed into categorical values before feeding the data into `ctree()`, so that we won't get class labels as a real number like 1.35. The built decision tree is shown in Figure \@ref(fig:ts-tree1).
+
+
+```{r ts-tree1, fig.width=20, fig.height=8, fig.cap='Decision Tree', out.width='100%', fig.align='center'}
+classId <- rep(as.character(1:6), each=100)
+newSc <- data.frame(cbind(classId, sc))
+library(party)
+ct <- ctree(classId ~ ., data=newSc, 
+            controls = ctree_control(minsplit=30, minbucket=10, maxdepth=5))
+pClassId <- predict(ct)
+table(classId, pClassId)
+# accuracy
+(sum(classId==pClassId)) / nrow(sc)
+plot(ct, ip_args=list(pval=FALSE), ep_args=list(digits=0))
+```
+
+
+### Classification with Extracted Features
+
+Next, we use DWT (Discrete Wavelet Transform) \index{discrete wavelet transform}\index{DWT|see{discrete wavelet transform}} \cite{Burrus98Introduction} to extract features from time series and then build a classification model. Wavelet transform provides a multi-resolution representation using wavelets. An example of Haar Wavelet Transform, the simplest DWT, is available at http://dmr.ath.cx/gfx/haar/. Another popular feature extraction technique is Discrete Fourier Transform (DFT) \@ref(Agrawal93Efficient).
+
+An example on extracting DWT (with Haar filter) coefficients is shown below. Package *wavelets* [@R-wavelets] is used for discrete wavelet transform. In the package, function `dwt(X, filter, n.levels, ...)`\index[functions]{dwt()} computes the discrete wavelet transform coefficients, where `X` is a univariate or multi-variate time series, `filter` indicates which wavelet filter to use, and `n.levels` specifies the level of decomposition. It returns an object of class `dwt`, whose slot `W` contains wavelet coefficients and `V` contains scaling coefficients. The original time series can be reconstructed via an inverse discrete wavelet transform with function `idwt()` in the same package. The produced model is shown in \@ref(fig:ts-tree2}.
+
+
+```{r}
+library(wavelets)
+wtData <- NULL
+for (i in 1:nrow(sc)) {
+  a <- t(sc[i,])
+  wt <- dwt(a, filter="haar", boundary="periodic")
+  wtData <- rbind(wtData, unlist(c(wt@W, wt@V[[wt@level]])))
+}
+wtData <- as.data.frame(wtData)
+wtSc <- data.frame(cbind(classId, wtData))
+```
+
+
+
+```{r ts-tree2, fig.width=18, fig.height=8, fig.cap='Decision Tree with DWT', out.width='100%', fig.align='center'}
+# build a decision tree with DWT coefficients
+ct <- ctree(classId ~ ., data=wtSc, 
+            controls = ctree_control(minsplit=30, minbucket=10, maxdepth=5))
+pClassId <- predict(ct)
+table(classId, pClassId)
+(sum(classId==pClassId)) / nrow(wtSc)
+plot(ct, ip_args=list(pval=FALSE), ep_args=list(digits=0))
+```
+
+
+
+### $k$-NN Classification
+
+The $k$-NN classification \index{k-NN classification} can also be used for time series classification. It finds out the $k$ nearest neighbors of a new instance and then labels it by majority voting. However, the time complexity of a naive way to find $k$ nearest neighbors is $O(n^2)$, where $n$ is the size of data. Therefore, an efficient indexing structure is needed for large datasets. Package *RANN* [@R-RANN] supports fast nearest neighbor search with a time complexity of $O(n \log n)$ using Arya and Mount's ANN library (v1.1.1) \footnote{\url{http://www.cs.umd.edu/~mount/ANN/}}. Below is an example of $k$-NN classification of time series without indexing.
+
+```{r, echo=F}
+# fix seed to get a fixed result in the chunk below
+set.seed(100)
+```
+
+```{r}
+k <- 20
+# create a new time series by adding noise to time series 501
+newTS <- sc[501,] + runif(100)*15
+distances <- dist(newTS, sc, method="DTW")
+s <- sort(as.vector(distances), index.return=TRUE)
+# class IDs of k nearest neighbors
+table(classId[s$ix[1:k]])
+```
+
+For the 20 nearest neighbors of the new time series, three of them are of class 4, and 17 are of class 6. With majority voting, that is, taking the more frequent label as winner, the label of the new time series is set to class 6.
+
+
+
+## Discussions {#ts:discuss}
+There are many R functions and packages available for time series decomposition and forecasting. However, there are no R functions or packages specially for time series classification and clustering. There are a lot of research publications on techniques specially for classifying/clustering time series data, but there are no R implementations for them (as far as I know).
+
+To do time series classification, one is suggested to extract and build features first, and then apply existing classification techniques, such as SVM, $k$-NN, neural networks, regression and decision trees, to the feature set.
+
+For time series clustering, one needs to work out his/her own distance or similarity metrics, and then use existing clustering techniques, such as $k$-means or hierarchical clustering, to find clusters.
+
+
+
+## Further Readings {#ts:readings}
+
+An introduction of R functions and packages for time series is available as [*CRAN Task View: Time Series Analysis*](http://cran.r-project.org/web/views/TimeSeries.html).
+
+R code examples for time series can be found in slides [*Time Series Analysis and Mining with R*](http://www.rdatamining.com/docs).
+
+Some further readings on time series representation, similarity, clustering and classification are [@Agrawal93Efficient], [@Burrus98Introduction], [@Chan99Efficient, @Chan03Harr, @Keogh98Enhanced, @Keogh00Dimensionality, @Keogh00Simple, @Morchen03Time, @Rafiei98Efficient, @Vlachos03Wavelet, @Wu00Comparison], and [@Zhao06Generalized].
+
+

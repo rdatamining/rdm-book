@@ -91,11 +91,14 @@ TF-IDF: Term frequency-inverse document frequency
 ```{r include=FALSE}
 # automatically create a bib database for R packages
 pkgs <- c('bookdown', 'knitr', 'rmarkdown',
-          'dplyr', 'foreign', 'fpc', 'ggplot2', 'ggvis', 'googleVis', 'lattice',
-          'magrittr', 'MASS', 'openxlsx', 'party', 
-          'randomForest', 'RColorBrewer', 'rgl', 'RODBC', 'rpart', 'rpart.plot', 'RPostgreSQL', 
-          'scatterplot3d', 
-          'TH.data', 'xlsx')
+          'arules', 'arulesViz', 'ast',
+          'cluster', 'DMwR', 'dplyr', 'dprep', 'dtw', 'extremevalues',
+          'foreign', 'fpc', 'ggplot2', 'ggvis', 'googleVis', 
+          'igraph', 'lattice',
+          'magrittr', 'MASS', 'mvoutlier', 'openxlsx', 'outliers', 'party', 
+          'randomForest', 'RANN', 'RColorBrewer', 'rgl', 'Rlof', 'RODBC', 'rpart', 'rpart.plot', 'RPostgreSQL', 
+          'scatterplot3d', 'stats', 
+          'TH.data', 'timsac', 'wavelets', 'xlsx')
 
 ## exclude packages already installed
 pkgs.installed <- installed.packages()
