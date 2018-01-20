@@ -1,5 +1,6 @@
 ```{r, results='hide', echo=F}
 # load libraries
+library(magrittr) ## for pipe operations
 library(arules)
 library(arulesViz)
 ```
@@ -34,120 +35,138 @@ In addition to support, confidence and lift, there are many other interestingnes
 
 The `Titanic` dataset\index{Titanic} in the *datasets* package is a 4-dimensional table with summarized information on the fate of passengers on the Titanic according to social class, sex, age and survival. To make it suitable for association rule mining, we reconstruct the raw data as `titanic.raw`, where each row represents a person. The reconstructed raw data can also be downloaded as file ``titanic.raw.rdata" at http://www.rdatamining.com/data.
 
-%# titanic.raw <- NULL
-%# for(i in 1:nrow(df)) {
-%#   if(df$Freq[i]>0) {
-%#      for(j in 1:df$Freq[i]) {
-%#         titanic.raw <- rbind(titanic.raw, df[i,])
-%#      }
-%#   }
-%# }
-%# titanic.raw$Freq <- NULL
-%# str(titanic.raw)
-%# rownames(titanic.raw) <- NULL
-%Note that the above code to convert the table to its raw format is not efficient for large datasets, because 1) looping is inefficient in R; and 2) the \func{rbind()} in loops will result in many relocations for object `titanic.raw`.
+
+```{r, include=F, eval=F}
+# reconstructing raw Titanic data
+titanic.raw <- NULL
+for(i in 1:nrow(df)) {
+  if(df$Freq[i]>0) {
+     for(j in 1:df$Freq[i]) {
+        titanic.raw <- rbind(titanic.raw, df[i,])
+     }
+  }
+}
+titanic.raw$Freq <- NULL
+str(titanic.raw)
+rownames(titanic.raw) <- NULL
+# Note that the above code to convert the table to its raw format is not efficient for large datasets, because 1) looping is inefficient in R; and 2) the \func{rbind()} in loops will result in many relocations for object `titanic.raw`.
+```
+
+
 
 ```{r}
-str(Titanic)
-df <- as.data.frame(Titanic)
-head(df)
-titanic.raw <- NULL
-for(i in 1:4) {
-   titanic.raw <- cbind(titanic.raw, rep(as.character(df[,i]), df$Freq))
-}
-titanic.raw <- as.data.frame(titanic.raw)
-names(titanic.raw) <- names(df)[1:4]
-dim(titanic.raw)
-str(titanic.raw)
-head(titanic.raw)
-summary(titanic.raw)
+# str(Titanic)
+# df <- as.data.frame(Titanic)
+# head(df)
+# titanic.raw <- NULL
+# for(i in 1:4) {
+#    titanic.raw <- cbind(titanic.raw, rep(as.character(df[,i]), df$Freq))
+# }
+# titanic.raw <- as.data.frame(titanic.raw)
+# names(titanic.raw) <- names(df)[1:4]
+
+# download data
+# download.file(url="http://www.rdatamining.com/data/titanic.raw.rdata",
+#              destfile="./data/titanic.raw.rdata")
+# load data, and the name of the R object is titanic.raw 
+load("./data/titanic.raw.rdata")
+# dimensionality
+titanic.raw %>% dim()
+# structure of data
+titanic.raw %>% str()
+# draw a random sample of 5 records
+idx <- 1:nrow(titanic.raw) %>% sample(5)
+titanic.raw[idx, ]
+# a summary of the dataset
+titanic.raw %>% summary()
 ```
 
 Now we have a dataset where each row stands for a person, and it can be used for association rule mining. 
 
-The raw Titanic dataset can also be downloaded from http://www.cs.toronto.edu/~delve/data/titanic/desc.html. The data is file ``Dataset.data" in the compressed archive ``titanic.tar.gz". We rename it as "titanic.data" and then read it into R with the code below.
-```{r}
-# have a look at the 1st 5 lines
+The raw Titanic dataset can also be downloaded from http://www.cs.toronto.edu/~delve/data/titanic/desc.html. The data is file *Dataset.data* in the compressed archive *titanic.tar.gz*. We rename it as *titanic.data* and then read it into R with the code below.
+```{r, eval=F}
+# have a look at the first five lines
 readLines("./data/titanic.data", n=5)
 # read it into R
-titanic <- read.table("./data/titanic.data", header=F)
-names(titanic) <- c("Class", "Sex", "Age", "Survived")
+titanic.raw <- read.table("./data/titanic.data", header=F)
+# set column names
+names(titanic.raw) <- c("Class", "Sex", "Age", "Survived")
 ```
 
 
 
 
 ## Association Rule Mining {#association:mining}
-A classic algorithm for association rule mining is APRIORI\index{APRIORI}[@Agrawal94Fast]. It is a level-wise, breadth-first algorithm which counts transactions to find frequent itemsets and then derive association rules from them. An implementation of it is function   `apriori()' in package *arules* [@Hahsler14arules]. Another algorithm for association rule mining is the ECLAT\index{ECLAT} algorithm[@Zaki00Scalable], which finds frequent itemsets with equivalence classes, depth-first search and set intersection instead of counting. It is implemented as function `eclat()` in the same package.
+A classic algorithm for association rule mining is APRIORI \index{APRIORI}[@Agrawal94Fast]. It is a level-wise, breadth-first algorithm which counts transactions to find frequent itemsets and then derive association rules from them. An implementation of it is function `apriori()` in package *arules* [@Hahsler14arules]. Another algorithm for association rule mining is the ECLAT\index{ECLAT} algorithm[@Zaki00Scalable], which finds frequent itemsets with equivalence classes, depth-first search and set intersection instead of counting. It is implemented as function `eclat()` in the same package.
 
 Below we demonstrate association rule mining with `apriori()`. With the function, the default settings are: 1) `supp=0.1`, which is the minimum support of rules\index{support}; 2) `conf=0.8`, which is the minimum confidence of rules\index{confidence}; and 3) `maxlen=10`, which is the maximum length of rules.
 
 ```{r}
-library(arules)
+library(arules) # load required library
 # find association rules with default settings
-rules.all <- apriori(titanic.raw)
-quality(rules.all) <- round(quality(rules.all), digits=3)
-rules.all
+rules.all <- titanic.raw %>% apriori()
+quality(rules.all) <- quality(rules.all) %>% round(digits=3)
+rules.all %>% inspect() ## print all rules
 ```
 
-If package *tm* has been loaded, function `inspect()` would be masked from package *arules*. If there is an error saying *Error in UseMethod(``inspect", x) : no applicable method for `inspect` applied to an object of class ``c(`rules', `associations')*, readers are suggested to use `arules::inspect()` to explicitly tell R to use the function from package *arules*. Same applies to other calls to function `inspect()` in the rest of this chapter.
-<<eval=F>>=
-inspect(rules.all)
+If package *tm* has been loaded, function `inspect()` would be masked from package *arules*. If there is an error saying *Error in UseMethod("inspect", x) : no applicable method for `inspect` applied to an object of class c('rules', 'associations')*, readers are suggested to use `arules::inspect()` to explicitly tell R to use the function from package *arules*. Same applies to other calls to function `inspect()` in the rest of this chapter.
+
+```{r, eval=F}
+rules.all %>% inspect() ## print all rules
 ## use code below if above code does not work
-arules::inspect(rules.all)
+rules.all %>% arules::inspect()
 ```
 
-<<echo=F>>=
-arules::inspect(rules.all)
+```{r, echo=F}
+rules.all %>% arules::inspect()
 ```
 
 
 
-As a common phenomenon for association rule mining, many rules generated above are uninteresting. Suppose that we are interested in only rules with `rhs` indicating survival, so we set `rhs=c("Survived=No", "Survived=Yes")` in `appearance` to make sure that only ``Survived=No" and ``Survived=Yes" will appear in the `rhs` of rules. All other items can appear in the `lhs`, as set with `default="lhs"`. In the above result `rules.all`, we can also see that the left-hand side (`lhs`) of the first rule is empty. To exclude such rules, we set `minlen` to 2 in the code below. Moreover, the details of progress are suppressed with `verbose=F`. After association rule mining, rules are sorted by lift to make high-lift rules appear first\index{lift}.
+As a common issue with association rule mining, many rules generated above are uninteresting. Suppose that we are interested in only rules with `rhs` indicating survival, so we set `rhs=c("Survived=No", "Survived=Yes")` in `appearance` to make sure that only ``Survived=No" and ``Survived=Yes" will appear in the `rhs` of rules. All other items can appear in the `lhs`, as set with `default="lhs"`. In the above result `rules.all`, we can also see that the left-hand side (`lhs`) of the first rule is empty. To exclude such rules, we set `minlen` to 2 in the code below. Moreover, the details of progress are suppressed with `verbose=F`. After association rule mining, rules are sorted by lift to make high-lift rules appear first\index{lift}.
 
 ```{r}
 # rules with rhs containing "Survived" only
-rules <- apriori(titanic.raw, control = list(verbose=F),
+rules <- titanic.raw %>% apriori(control = list(verbose=F),
                  parameter = list(minlen=2, supp=0.005, conf=0.8),
                  appearance = list(rhs=c("Survived=No", "Survived=Yes"),
                                    default="lhs"))
-quality(rules) <- round(quality(rules), digits=3)
-rules.sorted <- sort(rules, by="lift")
+quality(rules) <- quality(rules) %>% round(digits=3)
+rules.sorted <- rules %>% sort(by="lift")
 ```
 
-<<eval=F>>=
-inspect(rules.sorted)
+```{r, eval=F}
+rules.sorted %>% inspect()
 ```
-<<echo=F>>=
-arules::inspect(rules.sorted)
+```{r, echo=F}
+rules.sorted %>% arules::inspect()
 ```
-\label{page:association:rules1}
 
 
-When other settings are unchanged, with a lower minimum support, more rules will be produced, and the associations between itemsets shown in the rules will be more likely to be by chance. In the above code, the minimum support is set to 0.005, so each rule is supported at least by 12 (=`ceiling(0.005 * nrow(titanic.raw))') cases, which is acceptable for a population of \Sexpr{nrow(titanic.raw)}.
+When other settings are unchanged, with a lower minimum support, more rules will be produced, and the associations between itemsets shown in the rules will be more likely to be by chance. In the above code, the minimum support is set to 0.005, so each rule is supported at least by 12 (=`ceiling(0.005 * nrow(titanic.raw))`) cases, which is acceptable for a population of `r nrow(titanic.raw)`.
 
-Support, confidence and lift are three common measures for selecting interesting association rules. Besides them, there are many other interestingness measures, such as chi-square, conviction, gini and leverage[@Tan02Selecting]. More than twenty measures can be calculated with function \func{interestMeasure()} in the *arules} package. 
+Support, confidence and lift are three common measures for selecting interesting association rules. Besides them, there are many other interestingness measures, such as chi-square, conviction, gini and leverage[@Tan02Selecting]. More than 20 measures can be calculated with function `interestMeasure()` in the *arules* package. 
 
 
 
 ## Removing Redundancy \index{redundancy}
 
-Some rules generated in the previous section (see `rules.sorted`, \@ref{association-rules1}) provide little or no extra information when some other rules are in the result. For example, the above rule 2 provides no extra knowledge in addition to rule 1, since rules 1 tells us that all 2nd-class children survived. Generally speaking, when a rule (such as rule 2) is a super rule of another rule (such as rule 1) and the former has the same or a lower lift, the former rule (rule 2) is considered to be redundant. Other redundant rules in the above result are rules 4, 7 and 8,  compared respectively with rules 3, 6 and 5.
+Some rules generated in the previous section provide little or no extra information when some other rules are in the result. For example, the above rule 2 (see `rules.sorted` in Section \@ref(association:mining)) provides no extra knowledge in addition to rule 1, since rules 1 tells us that all 2nd-class children survived. Generally speaking, when a rule (such as rule 2) is a super rule of another rule (such as rule 1) and the former has the same or a lower lift, the former rule (rule 2) is considered to be redundant. Other redundant rules in the above result are rules 4, 7 and 8,  compared respectively with rules 3, 6 and 5.
 
 We prune redundant rules with code below. Note that the rules (in `rules.sorted`) have already been sorted descendingly by lift.
 ```{r}
 # find redundant rules
 subset.matrix <- is.subset(rules.sorted, rules.sorted)
-subset.matrix[lower.tri(subset.matrix, diag=T)] <- NA
+subset.matrix[lower.tri(subset.matrix, diag=T)] <- FALSE
 redundant <- colSums(subset.matrix, na.rm=T) >= 1
 which(redundant)
 # remove redundant rules
 rules.pruned <- rules.sorted[!redundant]
 ```
-<<eval=F>>=
+```{r, eval=F}
 inspect(rules.pruned)
 ```
-<<echo=F>>=
+```{r, echo=F}
 arules::inspect(rules.pruned)
 ```
 In the code above, function `is.subset(r1, r2)`\index[functions]{is.subset()} checks whether `r1` is a subset of `r2` (i.e., whether `r2` is a superset of `r1`). Function `lower.tri()` returns a logical matrix with `TURE` in lower triangle. From the above results, we can see that rules 2, 4, 7 and 8 (before redundancy removal) are successfully pruned.
@@ -157,7 +176,7 @@ In the code above, function `is.subset(r1, r2)`\index[functions]{is.subset()} ch
 
 ## Interpreting Rules
 
-While it is easy to find high-lift rules from data, it is not an easy job to understand the identified rules. It is not uncommon that the association rules are misinterpreted to find their business meanings. For instance, in the above rule list `rules.pruned`, the first rule `"\{Class=2nd, Age=Child\} => \{Survived=Yes\}"` has a confidence of one and a lift of three and there are no rules on children of the 1st or 3rd classes. Therefore, it might be interpreted by users as *children of the 2nd class had a higher survival rate than other children*. This is wrong! The rule states only that all children of class 2 survived, but provides no information at all to compare the survival rates of different classes. To investigate the above issue, we run the code below to find rules whose `rhs` is `"Survived=Yes"` and `lhs` contains `"Class=1st"`, `"Class=2nd"`, `"Class=3rd"`, `"Age=Child"` and `"Age=Adult"` only, and which contains no other items (`default="none"`). We use lower thresholds for both support and confidence than before to find all rules for children of different classes.
+While it is easy to find high-lift rules from data, it is not an easy job to understand the identified rules. It is not uncommon that the association rules are misinterpreted to find their business meanings. For instance, in the above rule list `rules.pruned`, the first rule `{Class=2nd, Age=Child} => {Survived=Yes}` has a confidence of one and a lift of three and there are no rules on children of the 1st or 3rd classes. Therefore, it might be interpreted by users as *children of the 2nd class had a higher survival rate than other children*. This is wrong! The rule states only that all children of class 2 survived, but provides no information at all to compare the survival rates of different classes. To investigate the above issue, we run the code below to find rules whose `rhs` is `"Survived=Yes"` and `lhs` contains `"Class=1st"`, `"Class=2nd"`, `"Class=3rd"`, `"Age=Child"` and `"Age=Adult"` only, and which contains no other items (`default="none"`). We use lower thresholds for both support and confidence than before to find all rules for children of different classes.
 ```{r}
 rules <- apriori(titanic.raw, 
                  parameter = list(minlen=3, supp=0.002, conf=0.2),
@@ -168,86 +187,53 @@ rules <- apriori(titanic.raw,
                  control = list(verbose=F))
 rules.sorted <- sort(rules, by="confidence")
 ```
-<<eval=F>>=
+```{r, eval=F}
 inspect(rules.sorted)
 ```
-<<echo=F>>=
+```{r, echo=F}
 arules::inspect(rules.sorted)
 ```
 
-In the above result, the first two rules show that children of the 1st class are of the same survival rate as children of the 2nd class and that all of them survived. The rule of 1st-class children didn't appear before, simply because of its support was below the threshold specified in \@ref(association:mining). Rule 5 presents a sad fact that children of class 3 had a low survival rate of 34%, which is comparable with that of 2nd-class adults (see rule 4) and much lower than 1st-class adults (see rule 3).
+In the above result, the first two rules show that children of the 1st class are of the same survival rate as children of the 2nd class and that all of them survived. The rule of 1st-class children didn't appear before, simply because of its support was below the threshold specified in Section \@ref(association:mining). Rule 5 presents a sad fact that children of class 3 had a low survival rate of 34%, which is comparable with that of 2nd-class adults (see rule 4) and much lower than 1st-class adults (see rule 3).
 
 
 
 
 ## Visualizing Association Rules
 
-Next we show some ways to visualize association rules, including scatter plot, balloon plot, graph and parallel coordinates plot\index{parallel coordinates}. More examples on visualizing association rules can be found in the vignettes of package *arulesViz* [@Hahsler14arulesViz] on CRAN at http://cran.r-project.org/web/packages/arulesViz/vignettes/arulesViz.pdf.
+Next we show some ways to visualize association rules, including scatter plot, balloon plot, graph and parallel coordinates plot\index{parallel coordinates}. More examples on visualizing association rules can be found in the vignettes of package *arulesViz* [@R-arulesViz] on CRAN at http://cran.r-project.org/web/packages/arulesViz/vignettes/arulesViz.pdf.
 
-\setkeys{Gin}{width=0.6\textwidth}
-\begin{figure}[H]
-\centering
-<<fig=T>>=
+```{r association-boxplot, fig.cap='A Scatter Plot of Association Rules', out.width='80%', fig.asp=.75, fig.align='center'}
 library(arulesViz)
 plot(rules.all)
 ```
-\caption{A Scatter Plot of Association Rules} 
-\label{fig:association:boxplot}
-\end{figure}
 
 
-\setkeys{Gin}{width=0.8\textwidth}
-\begin{figure}[H]
-\centering
-<<fig=T>>=
+```{r association-grouped, fig.cap='A Balloon Plot of Association Rules', out.width='80%', fig.asp=.75, fig.align='center'}
 plot(rules.all, method="grouped")
 ```
-\caption{A Balloon Plot of Association Rules} 
-\label{fig:association:grouped}
-\end{figure}
-\setkeys{Gin}{width=0.6\textwidth}
 
 
-\setkeys{Gin}{width=1.0\textwidth}
-\begin{figure}[H]
-\centering
-<<fig=T, width=8, height=8>>=
-plot(rules.all, method="graph")
+```{r association-graph-rules, fig.cap='A Graph of Association Rules - I', out.width='80%', fig.asp=.75, fig.align='center', width=8, height=8}
+plot(rules.all, method="graph", control=list(layout=igraph::with_fr()))
 ```
-\caption{A Graph of Association Rules}
-\label{fig:association:graph-rules}
-\end{figure}
-\setkeys{Gin}{width=0.6\textwidth}
 
 
-\setkeys{Gin}{width=1.0\textwidth}
-\begin{figure}[H]
-\centering
-<<fig=T>>=
-plot(rules.all, method="graph", control=list(type="items"))
+```{r association-graph-circle, fig.cap='A Graph of Association Rules - II', out.width='80%', fig.asp=.75, fig.align='center', width=8, height=8}
+plot(rules.all, method="graph", control=list(layout=igraph::in_circle()))
 ```
-\caption{A Graph of Items}
-\label{fig:association:graph-items}
-\end{figure}
-\setkeys{Gin}{width=0.6\textwidth}
 
 
-\setkeys{Gin}{width=0.6\textwidth}
-\begin{figure}[H]
-\centering
-<<fig=T>>=
+```{r association-paracoord, fig.cap='A Parallel Coordinates Plot of Association Rules', out.width='80%', fig.asp=.75, fig.align='center'}
 plot(rules.all, method="paracoord", control=list(reorder=TRUE))
 ```
-\caption{A Parallel Coordinates Plot of Association Rules}
-\label{fig:association:paracoord}
-\end{figure}
 
 
 
 ## Further Readings
 
-In this chapter, we have demonstrated association rule mining with package *arules* [@Hahsler14arules]. More examples on that package can be found in Hahsler et al.'s work [@Hahsler05arules]. Two other packages related to association rules are *arulesSequences* and *arulesNBMiner* [@Hahsler15arulesNBMiner]. Package *arulesSequences* provides functions for mining sequential patterns [@Buchta12arulesSequences]. Package *arulesNBMiner* implements an
-algorithm for mining negative binomial (NB) frequent itemsets and NB-precise rules [@Hahsler15arulesNBMiner].
+In this chapter, we have demonstrated association rule mining with package *arules* [@R-arules]. More examples on that package can be found in Hahsler et al.'s work [@Hahsler05arules]. Two other packages related to association rules are *arulesSequences* and *arulesNBMiner*. Package *arulesSequences* provides functions for mining sequential patterns [@R-arulesSequences]. Package *arulesNBMiner* implements an
+algorithm for mining negative binomial (NB) frequent itemsets and NB-precise rules [@R-arulesNBMiner].
 
 
 More techniques on post mining of association rules, such as selecting interesting association rules, visualization of association rules and using association rules for classification, can be found in Zhao et al's work [@Zhao09Post-mining].
